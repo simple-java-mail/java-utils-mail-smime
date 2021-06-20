@@ -1,295 +1,87 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>net.markenwerk</groupId>
+
+	<parent>
+		<groupId>com.github.bbottema</groupId>
+		<artifactId>standard-project-parent</artifactId>
+		<version>1.0.18</version>
+	</parent>
+
+	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>1.0.8</version>
 	<packaging>jar</packaging>
-
-	<name>${project.groupId}:${project.artifactId}</name>
+	<name>utils-mail-smime</name>
+	<version>1.0.8</version>
 	<description>A S/MIME library for JavaMail</description>
-	<url>${urls.github}</url>
-	<inceptionYear>2015</inceptionYear>
+	<url>http:///github.com/bbottema/java-utils-mail-smime</url>
+	<inceptionYear>2021</inceptionYear>
 
-	<licenses>
-		<license>
-			<name>GNU Lesser General Public License (LGPL), Version 3.0</name>
-			<url>http://www.gnu.org/licenses/lgpl-3.0.txt</url>
-		</license>
-	</licenses>
+	<properties>
+		<java.version>1.8</java.version>
+		<se.eris.notnull.instrument>false</se.eris.notnull.instrument>
+		<automaticModuleName>com.github.bbottema.java-utils-mail-smime</automaticModuleName>
+		<!-- license plugin, see possible types here: -->
+		<!-- https://github.com/mathieucarbou/license-maven-plugin/tree/master/license-maven-plugin/src/main/resources/com/mycila/maven/plugin/license/templates -->
+		<license.type>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.type>
+		<license.owner.name>Benny Bottema</license.owner.name>
+		<license.owner.email>benny@bennybottema.com</license.owner.email>
+	</properties>
 
-	<organization>
-		<name>Markenwerk – Gesellschaft für markenbildende Maßnahmen mbH</name>
-		<url>http://markenwerk.net/</url>
-	</organization>
+	<scm>
+		<connection>scm:git:git://github.com/bbottema/java-utils-mail-smime.git</connection>
+		<developerConnection>scm:git:git@github.com:bbottema/java-utils-mail-smime.git</developerConnection>
+		<url>https://github.com/bbottema/java-utils-mail-smime</url>
+	</scm>
 
 	<developers>
 		<developer>
-			<name>Torsten Krause</name>
-			<email>tk@markenwerk.net</email>
-			<organization>${project.organization.name}</organization>
-			<organizationUrl>${project.organization.url}</organizationUrl>
+			<id>benny</id>
+			<name>Benny Bottema</name>
+			<email>benny@bennybottema.com</email>
+			<url>http://www.bennybottema.com</url>
+			<roles>
+				<role>developer</role>
+				<role>packager</role>
+			</roles>
 		</developer>
 	</developers>
 
-	<scm>
-		<connection>${connections.github}</connection>
-		<developerConnection>${connections.github}</developerConnection>
-		<url>${urls.github}</url>
-	</scm>
-
-	<ciManagement>
-		<system>Travis CI</system>
-		<url>${urls.travis}</url>
-	</ciManagement>
+	<contributors>
+		<contributor>
+			<name>Torsten Krause</name>
+			<email>tk@markenwerk.net</email>
+			<organization>${project.organization.name}</organization>
+			<organizationUrl>http://markenwerk.net</organizationUrl>
+			<roles>
+				<role>original developer</role>
+			</roles>
+		</contributor>
+	</contributors>
 
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>${urls.github}/issues</url>
+		<url>https://github.com/bbottema/java-utils-mail-smime/issues</url>
 	</issueManagement>
 
-	<properties>
-		<project.identifier>markenwerk/java-${project.artifactId}</project.identifier>
-		<urls.travis>https://travis-ci.org/${project.identifier}</urls.travis>
-		<urls.github>https://github.com/${project.identifier}</urls.github>
-		<connections.github>scm:git:github:${project.identifier}.git</connections.github>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>1.6</maven.compiler.source>
-		<maven.compiler.target>1.6</maven.compiler.target>
-	</properties>
-
 	<dependencies>
+		<dependency><!-- Gives us @NotNull and @Nullable -->
+			<groupId>org.jetbrains</groupId>
+			<artifactId>annotations</artifactId>
+			<version>16.0.2</version>
+			<scope>provided</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcmail-jdk15on</artifactId>
 			<version>1.56</version>
 		</dependency>
-
 		<dependency>
 			<groupId>com.sun.mail</groupId>
-			<artifactId>javax.mail</artifactId>
-			<version>1.5.6</version>
+			<artifactId>jakarta.mail</artifactId>
+			<version>2.0.1</version>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<resources>
-			<resource>
-				<directory>${project.basedir}</directory>
-				<includes>
-					<include>LICENSE</include>
-				</includes>
-			</resource>
-		</resources>
-
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.19.1</version>
-				<configuration>
-					<includes>
-						<exclude>**/*Tests.java</exclude>
-					</includes>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.0.2</version>
-				<configuration>
-					<archive>
-						<addMavenDescriptor>false</addMavenDescriptor>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.felix</groupId>
-				<artifactId>maven-bundle-plugin</artifactId>
-				<version>3.2.0</version>
-				<configuration>
-					<instructions>
-						<Bundle-DocURL>${project.url}</Bundle-DocURL>
-					</instructions>
-				</configuration>
-				<executions>
-					<execution>
-						<id>bundle-manifest</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>manifest</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.4</version>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
-
-	<profiles>
-		<profile>
-			<id>deploy</id>
-			<distributionManagement>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-				<repository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-			</distributionManagement>
-
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-gpg-plugin</artifactId>
-						<version>1.6</version>
-						<executions>
-							<execution>
-								<id>sign-artifacts</id>
-								<phase>verify</phase>
-								<goals>
-									<goal>sign</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.8</version>
-						<extensions>true</extensions>
-						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>true</autoReleaseAfterClose>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>publish</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.10.4</version>
-						<configuration>
-							<notimestamp>true</notimestamp>
-							<includeDependencySources>true</includeDependencySources>
-							<includeTransitiveDependencySources>true</includeTransitiveDependencySources>
-							<dependencySourceIncludes>
-								<dependencySourceInclude>net.markenwerk:*</dependencySourceInclude>
-							</dependencySourceIncludes>
-							<links>
-								<link>https://www.bouncycastle.org/docs/docs1.5on/</link>
-								<link>https://javamail.java.net/nonav/docs/api/</link>
-							</links>
-						</configuration>
-						<executions>
-							<execution>
-								<id>attach-javadocs</id>
-								<goals>
-									<goal>jar</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<plugin>
-						<groupId>org.apache.maven.plugins</groupId>
-						<artifactId>maven-scm-publish-plugin</artifactId>
-						<version>1.1</version>
-						<configuration>
-							<checkoutDirectory>${project.build.directory}/gh-pages</checkoutDirectory>
-							<checkinComment>Javadoc for ${project.artifactId}:${project.version}</checkinComment>
-							<content>${project.build.directory}/apidocs</content>
-							<siteOutputEncoding>UTF-8</siteOutputEncoding>
-							<skipDeletedFiles>false</skipDeletedFiles>
-							<pubScmUrl>${project.scm.developerConnection}</pubScmUrl>
-							<scmBranch>gh-pages</scmBranch>
-						</configuration>
-						<executions>
-							<execution>
-								<id>publish-javadocs</id>
-								<phase>install</phase>
-								<goals>
-									<goal>publish-scm</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-
-		<profile>
-			<id>coverall</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.7.9</version>
-						<configuration>
-							<excludes>
-								<exclude>**/*Exception.*</exclude>
-							</excludes>
-						</configuration>
-						<executions>
-							<execution>
-								<id>prepare-agent</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-						</executions>
-					</plugin>
-
-					<plugin>
-						<groupId>org.eluder.coveralls</groupId>
-						<artifactId>coveralls-maven-plugin</artifactId>
-						<version>4.3.0</version>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>

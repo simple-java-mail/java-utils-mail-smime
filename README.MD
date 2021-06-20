@@ -1,12 +1,29 @@
-# A S/MIME library for JavaMail
+[![APACHE v2 License](https://img.shields.io/badge/license-apachev2-blue.svg?style=flat)](LICENSE-2.0.txt)
+[![Latest Release](https://img.shields.io/maven-central/v/org.simplejavamail/utils-mail-smime.svg?style=flat)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.simplejavamail%22%20AND%20a%3A%22utils-mail-smime%22)
+[![Javadocs](http://www.javadoc.io/badge/org.simplejavamail/utils-mail-smime.svg)](http://www.javadoc.io/doc/org.simplejavamail/utils-mail-smime)
+[![Codacy](https://img.shields.io/codacy/grade/4d380e585ee54d30ae67e200be1806f5?style=flat)](https://www.codacy.com/gh/simple-java-mail/java-utils-mail-smime)
 
-[![Build Status](https://travis-ci.org/markenwerk/java-utils-mail-smime.svg?branch=master)](https://travis-ci.org/markenwerk/java-utils-mail-smime)
-[![Dependency Status](https://www.versioneye.com/user/projects/562bcd9836d0ab002100128a/badge.svg)](https://www.versioneye.com/user/projects/562bcd9836d0ab002100128a)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.markenwerk/utils-mail-smime/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.markenwerk/utils-mail-smime)
-[![Java SE 6](https://img.shields.io/badge/java-SE_6-brightgreen.svg)](http://docs.oracle.com/javase/6/docs/api/)
-[![LGPL 3.0 License](https://img.shields.io/badge/license-LGPL_3.0-brightgreen.svg)](https://github.com/markenwerk/java-utils-mail-smime/blob/master/LICENSE)
+# org.simplejavamail:utils-mail-smime
 
-This is a simple to use library to use [S/MIME](https://en.wikipedia.org/wiki/S/MIME) features in conjunction with [JavaMail](http://www.oracle.com/technetwork/java/javamail/index.html).
+This is a simple-to-use library to use [S/MIME](https://en.wikipedia.org/wiki/S/MIME) features in conjunction with [Jakarta Mail](https://eclipse-ee4j.github.io/mail/).
+
+Note: This is a revival / continuation of the archived project markenwerk/java-utils-mail-smime, which itself was a continuation of an older project.
+
+```xml
+<dependency>
+	<groupId>org.simplejavamail</groupId>
+	<artifactId>utils-mail-smime</artifactId>
+	<version>1.0.8</version>
+</dependency>
+```
+
+## Change history
+
+v1.0.x (xx-xx-2021)
+
+- Initial release, with deprecated JavaMail upgraded Jakarta Mail 2.0.1 and Apache v2 license
+
+# Original documenation follows:
 
 ## Overview
 
@@ -19,14 +36,6 @@ This library allows you to
  - decrypt a MIME message that is encrypted according to the S/MIME standard.
 
 This library is hosted in the [Maven Central Repository](https://maven-badges.herokuapp.com/maven-central/net.markenwerk/utils-mail-smime). You can use it with the following coordinates:
-
-```xml
-<dependency>
-	<groupId>net.markenwerk</groupId>
-	<artifactId>utils-mail-smime</artifactId>
-	<version>1.0.8</version>
-</dependency>
-```
 
 Consult the [usage description](#usage) and [Javadoc](http://markenwerk.github.io/java-utils-mail-smime/index.html) for further information.
 

@@ -1,57 +1,4 @@
-/*
- * Copyright (c) 2015 Torsten Krause, Markenwerk GmbH.
- * 
- * This file is part of 'A S/MIME library for JavaMail', hereafter
- * called 'this library', identified by the following coordinates:
- * 
- *    groupID: net.markenwerk
- *    artifactId: utils-mail-smime
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3.0 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library.
- * 
- * See the LICENSE and NOTICE files in the root directory for further
- * information.
- */
 package net.markenwerk.utils.mail.smime;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.GeneralSecurityException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.Security;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.activation.CommandMap;
-import javax.activation.MailcapCommandMap;
-import javax.mail.Header;
-import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimePart;
 
 import com.sun.mail.smtp.SMTPMessage;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -92,6 +39,33 @@ import org.bouncycastle.mail.smime.SMIMEUtil;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.util.Store;
+
+import javax.activation.CommandMap;
+import javax.activation.MailcapCommandMap;
+import javax.mail.Header;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.Session;
+import javax.mail.internet.ContentType;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.internet.MimePart;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.security.GeneralSecurityException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.Security;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Utilities for handling S/MIME specific operations on MIME messages from
