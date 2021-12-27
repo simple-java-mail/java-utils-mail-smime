@@ -21,10 +21,10 @@ import java.util.Set;
  */
 public class SmimeKeyStore {
 
-	private KeyStore keyStore = null;
+	private final KeyStore keyStore;
 
 	/**
-	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from a
+	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from
 	 * the given input stream.
 	 * 
 	 * <p>
@@ -41,7 +41,7 @@ public class SmimeKeyStore {
 	}
 
 	/**
-	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from a
+	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from
 	 * the given input stream.
 	 * 
 	 * <p>
@@ -166,7 +166,7 @@ public class SmimeKeyStore {
 	public Set<String> getPrivateKeyAliases() {
 		try {
 			Enumeration<String> aliases = keyStore.aliases();
-			Set<String> aliasSet = new HashSet<String>();
+			Set<String> aliasSet = new HashSet<>();
 			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
 				if (keyStore.isKeyEntry(alias))

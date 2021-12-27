@@ -34,16 +34,5 @@ public class SmimeException extends RuntimeException {
 	public SmimeException(String message) {
 		super(message);
 	}
-
-	/**
-	 * Create a new {@code SmimeException} with the given cause.
-	 * 
-	 * @param cause
-	 *            The causing {@link Exception} wrapped by this
-	 *            {@code SmimeException}.
-	 */
-	public SmimeException(Throwable cause) {
-		super(cause);
-	}
-
+	
 }

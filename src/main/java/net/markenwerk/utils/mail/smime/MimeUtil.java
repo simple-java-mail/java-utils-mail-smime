@@ -1,9 +1,7 @@
 package net.markenwerk.utils.mail.smime;
 
 import jakarta.mail.MessagingException;
-import jakarta.mail.Session;
 import jakarta.mail.internet.MimeBodyPart;
-import jakarta.mail.internet.MimeMessage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -20,18 +18,7 @@ final class MimeUtil {
 
 	private MimeUtil() {
 	}
-
-	/**
-	 * Translates a {@link MimeMessage} into its MIME-canonical form.
-	 */
-	static MimeMessage canonicalize(Session session, MimeMessage mimeMessage) throws MessagingException, IOException {
-		ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-		OutputStream out = new MimeCanonicalOutputStream(buffer);
-		mimeMessage.writeTo(out);
-		out.close();
-		return new MimeMessage(session, new ByteArrayInputStream(buffer.toByteArray()));
-	}
-
+	
 	/**
 	 * Translates a {@link MimeBodyPart} into its MIME-canonical form.
 	 */
@@ -50,7 +37,7 @@ final class MimeUtil {
 	private static class MimeCanonicalOutputStream extends java.io.FilterOutputStream {
 
 		int lastReadByte = -1;
-		byte[] crlf = new byte[] { (byte) '\r', (byte) '\n' };
+		final byte[] crlf = new byte[] { (byte) '\r', (byte) '\n' };
 
 		public MimeCanonicalOutputStream(java.io.OutputStream os) {
 			super(os);
@@ -68,11 +55,11 @@ final class MimeUtil {
 			lastReadByte = b;
 		}
 
-		public void write(byte b[]) throws java.io.IOException {
+		public void write(byte[] b) throws java.io.IOException {
 			write(b, 0, b.length);
 		}
 
-		public void write(byte b[], int off, int len) throws java.io.IOException {
+		public void write(byte[] b, int off, int len) throws java.io.IOException {
 			int start = off;
 
 			len = off + len;

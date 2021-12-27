@@ -53,7 +53,6 @@ import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.internet.MimePart;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.Security;
@@ -84,6 +83,7 @@ public final class SmimeUtil {
 		}
 	}
 
+	@SuppressWarnings("unused")
 	private SmimeUtil() {
 	}
 
@@ -143,9 +143,8 @@ public final class SmimeUtil {
 		try {
 			SMIMEEnvelopedGenerator generator = prepareGenerator(certificate);
 			OutputEncryptor encryptor = prepareEncryptor();
-
-			MimeBodyPart encryptedMimeBodyPart = generator.generate(mimeBodyPart, encryptor);
-			return encryptedMimeBodyPart;
+			
+			return generator.generate(mimeBodyPart, encryptor);
 
 		} catch (Exception e) {
 			throw handledException(e);
@@ -153,13 +152,11 @@ public final class SmimeUtil {
 	}
 
 	private static void copyHeaders(MimeBodyPart fromBodyPart, MimeMessage toMessage) throws MessagingException {
-		@SuppressWarnings("unchecked")
 		Enumeration<Header> headers = fromBodyPart.getAllHeaders();
 		copyHeaders(headers, toMessage);
 	}
 
 	private static void copyHeaders(MimeMessage fromMessage, MimeMessage toMessage) throws MessagingException {
-		@SuppressWarnings("unchecked")
 		Enumeration<Header> headers = fromMessage.getAllHeaders();
 		copyHeaders(headers, toMessage);
 	}
@@ -186,7 +183,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Decrypts a S/MIME encrypted MIME message and yields a new MIME message.
+	 * Decrypts an S/MIME encrypted MIME message and yields a new MIME message.
 	 * 
 	 * @param session
 	 *            The {@link Session} that is used in conjunction with the
@@ -215,7 +212,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Decrypts a S/MIME encrypted MIME body part and yields a new MIME body
+	 * Decrypts an S/MIME encrypted MIME body part and yields a new MIME body
 	 * part.
 	 * 
 	 * @param mimeBodyPart
@@ -235,7 +232,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Decrypts a S/MIME encrypted MIME multipart and yields a new MIME body
+	 * Decrypts an S/MIME encrypted MIME multipart and yields a new MIME body
 	 * part.
 	 * 
 	 * @param mimeMultipart
@@ -274,7 +271,6 @@ public final class SmimeUtil {
 	}
 
 	private static void copyHeaderLines(MimeMessage fromMessage, MimeMessage toMessage) throws MessagingException {
-		@SuppressWarnings("unchecked")
 		Enumeration<String> headerLines = fromMessage.getAllHeaderLines();
 		while (headerLines.hasMoreElements()) {
 			String nextElement = headerLines.nextElement();
@@ -327,8 +323,7 @@ public final class SmimeUtil {
 
 		PrivateKey privateKey = smimeKey.getPrivateKey();
 		X509Certificate certificate = smimeKey.getCertificate();
-		SignerInfoGenerator infoGenerator = builder.build("SHA256withRSA", privateKey, certificate);
-		return infoGenerator;
+		return builder.build("SHA256withRSA", privateKey, certificate);
 	}
 
 	private static ASN1EncodableVector getSignedAttributes(SmimeKey smimeKey) {
@@ -351,19 +346,18 @@ public final class SmimeUtil {
 		X509Certificate certificate = smimeKey.getCertificate();
 		BigInteger serialNumber = certificate.getSerialNumber();
 		X500Name issuerName = new X500Name(certificate.getIssuerDN().getName());
-		IssuerAndSerialNumber issuerAndSerialNumber = new IssuerAndSerialNumber(issuerName, serialNumber);
-		return issuerAndSerialNumber;
+		return new IssuerAndSerialNumber(issuerName, serialNumber);
 	}
 
 	private static JcaCertStore getCertificateStore(SmimeKey smimeKey) throws CertificateEncodingException {
 		Certificate[] certificateChain = smimeKey.getCertificateChain();
 		X509Certificate certificate = smimeKey.getCertificate();
 
-		List<Certificate> certificateList = null;
+		final List<Certificate> certificateList;
 		if (certificateChain != null && certificateChain.length > 0) {
 			certificateList = Arrays.asList(certificateChain);
 		} else {
-			certificateList = new ArrayList<Certificate>();
+			certificateList = new ArrayList<>();
 			certificateList.add(certificate);
 		}
 		return new JcaCertStore(certificateList);
@@ -383,6 +377,7 @@ public final class SmimeUtil {
 	 * @return The new S/MIME signed {@link MimeMessage} or {@link SMTPMessage}.
 	 */
 	public static <T extends MimeMessage> T sign(Session session, T mimeMessage, SmimeKey smimeKey) {
+		//noinspection unchecked
 		return (mimeMessage instanceof SMTPMessage)
 				? sign(mimeMessage, (T) new SMTPMessage(session), smimeKey)
 				: sign(mimeMessage, (T) new MimeMessage(session), smimeKey);
@@ -411,7 +406,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Checks the signature on a S/MIME signed MIME multipart.
+	 * Checks the signature on an S/MIME signed MIME multipart.
 	 * 
 	 * @param mimeMultipart
 	 *            The {@link MimeMultipart} to be checked.
@@ -427,7 +422,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Checks the signature on a S/MIME signed MIME part (i.e. MIME message).
+	 * Checks the signature on an S/MIME signed MIME part (i.e. MIME message).
 	 * 
 	 * @param mimePart
 	 *            The {@link MimePart} to be checked.
@@ -451,8 +446,7 @@ public final class SmimeUtil {
 	/**
 	 * Checks a SMIMESigned to make sure that the signature matches.
 	 */
-	private static boolean checkSignature(SMIMESigned smimeSigned) throws MessagingException, IOException,
-			GeneralSecurityException {
+	private static boolean checkSignature(SMIMESigned smimeSigned) {
 		try {
 			boolean returnValue = true;
 
@@ -547,7 +541,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Returns the signed MIME body part of a S/MIME signed MIME multipart.
+	 * Returns the signed MIME body part of an S/MIME signed MIME multipart.
 	 * 
 	 * @param mimeMultipart
 	 *            The {@link MimeMultipart} to be stripped off.
@@ -563,7 +557,7 @@ public final class SmimeUtil {
 	}
 
 	/**
-	 * Returns the signed MIME body part of a S/MIME signed MIME part (i.e. MIME
+	 * Returns the signed MIME body part of an S/MIME signed MIME part (i.e. MIME
 	 * message).
 	 * 
 	 * @param mimePart

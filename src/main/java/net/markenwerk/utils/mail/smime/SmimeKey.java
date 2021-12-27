@@ -85,7 +85,7 @@ public class SmimeKey {
 	}
 
 	private void extractAssociatedAddresses() {
-		List<String> addresses = new ArrayList<String>();
+		List<String> addresses = new ArrayList<>();
 		try {
 			X509Certificate certificate = getCertificate();
 			if (null != certificate) {

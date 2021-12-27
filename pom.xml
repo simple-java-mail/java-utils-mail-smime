@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.github.bbottema</groupId>
 		<artifactId>standard-project-parent</artifactId>
-		<version>1.0.18</version>
+		<version>1.0.24</version>
 	</parent>
 
 	<groupId>org.simplejavamail</groupId>
@@ -19,8 +19,6 @@
 	<inceptionYear>2021</inceptionYear>
 
 	<properties>
-		<java.version>1.8</java.version>
-		<se.eris.notnull.instrument>false</se.eris.notnull.instrument>
 		<automaticModuleName>com.github.bbottema.java-utils-mail-smime</automaticModuleName>
 		<!-- license plugin, see possible types here: -->
 		<!-- https://github.com/mathieucarbou/license-maven-plugin/tree/master/license-maven-plugin/src/main/resources/com/mycila/maven/plugin/license/templates -->

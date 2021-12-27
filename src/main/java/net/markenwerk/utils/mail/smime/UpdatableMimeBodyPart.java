@@ -2,7 +2,6 @@ package net.markenwerk.utils.mail.smime;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
-import java.io.InputStream;
 
 /**
  * A {@link MimeBodyPart} that exposes the method {@code updateHeaders()} with
@@ -13,26 +12,6 @@ import java.io.InputStream;
  * @since 1.0.0
  */
 class UpdatableMimeBodyPart extends MimeBodyPart {
-
-	/**
-	 * Create a new {@code UpdatableMimeBodyPart}.
-	 */
-	public UpdatableMimeBodyPart() {
-		super();
-	}
-
-	/**
-	 * Create a new {@code UpdatableMimeBodyPart} by reading and parsing the
-	 * data from the specified input stream.
-	 * 
-	 * @param in
-	 *            The {@link InputStream} to be read.
-	 * @throws MessagingException
-	 *             If the {@code MimeBodyPart} couldn't be read.
-	 */
-	public UpdatableMimeBodyPart(InputStream in) throws MessagingException {
-		super(in);
-	}
 
 	/**
 	 * Calls updateHeaders().
