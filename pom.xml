@@ -51,11 +51,20 @@
 	<contributors>
 		<contributor>
 			<name>Torsten Krause</name>
-			<email>tk@markenwerk.net</email>
-			<organization>${project.organization.name}</organization>
-			<organizationUrl>http://markenwerk.net</organizationUrl>
 			<roles>
-				<role>original developer</role>
+				<role>original developer (GitHub, 2015)</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Lijun Liao</name>
+			<roles>
+				<role>original developer (SourceForge, 2003)</role>
+			</roles>
+		</contributor>
+		<contributor>
+			<name>Allen Petersen</name>
+			<roles>
+				<role>original developer (SourceForge, 2003)</role>
 			</roles>
 		</contributor>
 	</contributors>
