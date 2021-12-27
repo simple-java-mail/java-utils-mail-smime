@@ -1,7 +1,7 @@
 package net.markenwerk.utils.mail.smime;
 
-import javax.mail.internet.MimeMultipart;
-import javax.mail.internet.MimePart;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimePart;
 
 /**
  * The {@code SmimeState} of a {@link MimePart} or {@link MimeMultipart} is

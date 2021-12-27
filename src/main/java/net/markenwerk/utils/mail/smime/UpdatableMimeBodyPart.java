@@ -1,7 +1,7 @@
 package net.markenwerk.utils.mail.smime;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeBodyPart;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeBodyPart;
 import java.io.InputStream;
 
 /**
