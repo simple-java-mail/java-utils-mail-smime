@@ -7,7 +7,7 @@
 
 This is a simple-to-use library to use [S/MIME](https://en.wikipedia.org/wiki/S/MIME) features in conjunction with [Jakarta Mail](https://eclipse-ee4j.github.io/mail/).
 
-Note: This is a revival / continuation of the archived project markenwerk/java-utils-mail-smime, which itself was a continuation of an older project.
+Note: This is a revival / continuation of the archived project markenwerk/java-utils-mail-smime, which itself was a continuation of an abandoned project on SourceForge.
 
 ```xml
 <dependency>
