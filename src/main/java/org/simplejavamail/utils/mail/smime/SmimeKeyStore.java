@@ -1,4 +1,4 @@
-package net.markenwerk.utils.mail.smime;
+package org.simplejavamail.utils.mail.smime;
 
 import java.io.InputStream;
 import java.security.KeyStore;

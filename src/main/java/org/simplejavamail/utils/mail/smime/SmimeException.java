@@ -1,4 +1,4 @@
-package net.markenwerk.utils.mail.smime;
+package org.simplejavamail.utils.mail.smime;
 
 /**
  * A {@link RuntimeException} that is used to indicate S/MIME specific

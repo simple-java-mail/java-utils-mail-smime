@@ -1,4 +1,4 @@
-package net.markenwerk.utils.mail.smime;
+package org.simplejavamail.utils.mail.smime;
 
 import com.sun.mail.smtp.SMTPMessage;
 import org.bouncycastle.asn1.ASN1EncodableVector;
