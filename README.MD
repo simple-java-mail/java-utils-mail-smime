@@ -13,15 +13,19 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>1.0.8</version>
+	<version>2.0.0</version>
 </dependency>
 ```
 
 ## Change history
 
-v1.0.x (xx-xx-2021)
+v2.0.0 (28-12-2021)
 
-- Initial release, with deprecated JavaMail upgraded Jakarta Mail 2.0.1 and Apache v2 license
+- Initial release, with: 
+- deprecated JavaMail upgraded Jakarta Mail 2.0.1
+- Apache v2 license (with full permissions of all past authors)
+- Java 8
+- Log4j security fixes
 
 # Original documenation follows:
 
