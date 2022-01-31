@@ -19,6 +19,11 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 
 ## Change history
 
+v2.0.1 (31-01-2022)
+
+- [#1](https://github.com/simple-java-mail/java-utils-mail-smime/issues/1) Bug: determining mime state causes NPE when the "protocol" part is missing from the ContentType header
+
+
 v2.0.0 (28-12-2021)
 
 - Initial release, with: 
