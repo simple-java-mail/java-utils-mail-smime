@@ -27,7 +27,7 @@ public enum SmimeState {
 	
 	/**
 	 * Indicates that the {@link MimePart} or {@link MimeMultipart} is S/MIME
-	 * signed using the older envelope style.
+	 * signed using an envelope (content is wrapped, probably as base64).
 	 */
 	SIGNED_ENVELOPED,
 
