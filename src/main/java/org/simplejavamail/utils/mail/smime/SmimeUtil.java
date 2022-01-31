@@ -99,7 +99,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Encrypts a MIME message and yields a new S/MIME encrypted MIME message.
-	 * 
+	 *
 	 * @param session
 	 *            The {@link Session} that is used in conjunction with the
 	 *            original {@link MimeMessage}.
@@ -131,7 +131,7 @@ public final class SmimeUtil {
 	/**
 	 * Encrypts a MIME body part and yields a new S/MIME encrypted MIME body
 	 * part.
-	 * 
+	 *
 	 * @param mimeBodyPart
 	 *            The original {@link MimeBodyPart} to be encrypted.
 	 * @param certificate
@@ -184,7 +184,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Decrypts an S/MIME encrypted MIME message and yields a new MIME message.
-	 * 
+	 *
 	 * @param session
 	 *            The {@link Session} that is used in conjunction with the
 	 *            encrypted {@link MimeMessage}.
@@ -214,7 +214,7 @@ public final class SmimeUtil {
 	/**
 	 * Decrypts an S/MIME encrypted MIME body part and yields a new MIME body
 	 * part.
-	 * 
+	 *
 	 * @param mimeBodyPart
 	 *            The encrypted {@link MimeBodyPart} to be decrypted.
 	 * @param smimeKey
@@ -234,7 +234,7 @@ public final class SmimeUtil {
 	/**
 	 * Decrypts an S/MIME encrypted MIME multipart and yields a new MIME body
 	 * part.
-	 * 
+	 *
 	 * @param mimeMultipart
 	 *            The encrypted {@link MimeMultipart} to be decrypted.
 	 * @param smimeKey
@@ -285,7 +285,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Signs a MIME body part and yields a new S/MIME signed MIME body part.
-	 * 
+	 *
 	 * @param mimeBodyPart
 	 *            The original {@link MimeBodyPart} to be signed.
 	 * @param smimeKey
@@ -407,7 +407,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Checks the signature on an S/MIME signed MIME multipart.
-	 * 
+	 *
 	 * @param mimeMultipart
 	 *            The {@link MimeMultipart} to be checked.
 	 * @return {@code true} if the multipart is correctly signed, {@code false}
@@ -423,7 +423,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Checks the signature on an S/MIME signed MIME part (i.e. MIME message).
-	 * 
+	 *
 	 * @param mimePart
 	 *            The {@link MimePart} to be checked.
 	 * @return {@code true} if the part is correctly signed, {@code false}
@@ -542,7 +542,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Returns the signed MIME body part of an S/MIME signed MIME multipart.
-	 * 
+	 *
 	 * @param mimeMultipart
 	 *            The {@link MimeMultipart} to be stripped off.
 	 * @return The signed {@link MimeBodyPart} contained in the
@@ -559,7 +559,7 @@ public final class SmimeUtil {
 	/**
 	 * Returns the signed MIME body part of an S/MIME signed MIME part (i.e. MIME
 	 * message).
-	 * 
+	 *
 	 * @param mimePart
 	 *            The {@link MimePart} to be stripped off.
 	 * @return The signed {@link MimeBodyPart} contained in the {@link MimePart}
@@ -581,7 +581,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Returns the S/MIME state of a MIME multipart.
-	 * 
+	 *
 	 * @param mimeMultipart
 	 *            The {@link MimeMultipart} to be checked.
 	 * @return the {@link SmimeState} of the {@link MimeMultipart}.
@@ -596,7 +596,7 @@ public final class SmimeUtil {
 
 	/**
 	 * Returns the S/MIME state of a MIME part (i.e. MIME message).
-	 * 
+	 *
 	 * @param mimePart
 	 *            The {@link MimePart} to be checked.
 	 * @return the {@link SmimeState} of the {@link MimePart}.
@@ -629,8 +629,9 @@ public final class SmimeUtil {
 
 	private static boolean isSmimeSignatureContentType(ContentType contentType) {
 		String baseContentType = contentType.getBaseType();
+		String protocol = contentType.getParameter("protocol");
 		return baseContentType.equalsIgnoreCase("multipart/signed")
-				&& isSmimeSignatureProtocoll(contentType.getParameter("protocol"));
+				&& protocol != null && isSmimeSignatureProtocoll(protocol);
 	}
 	
 	private static boolean isSignatureSmimeType(ContentType contentType) {
