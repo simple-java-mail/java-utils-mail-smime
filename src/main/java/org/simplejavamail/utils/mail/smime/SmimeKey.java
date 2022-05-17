@@ -89,7 +89,7 @@ public class SmimeKey {
 		try {
 			X509Certificate certificate = getCertificate();
 			if (null != certificate) {
-				Principal principal = certificate.getSubjectDN();
+				Principal principal = certificate.getSubjectX500Principal();
 				if (null != principal) {
 					String name = principal.getName();
 					StringTokenizer tokenizer = new StringTokenizer(name, ",");

@@ -1,0 +1,35 @@
+[ req ]
+default_bits            = 4096
+distinguished_name      = req_distinguished_name
+string_mask = utf8only
+
+[ req_distinguished_name ]
+countryName                     = Country Name (2 letter code)
+countryName_default             = AA
+countryName_min                 = 2
+countryName_max                 = 2
+stateOrProvinceName             = State or Province Name (full name)
+stateOrProvinceName_default     = Testprovince
+localityName                    = Locality Name (eg, city)
+localityName_default            = Testtown
+0.organizationName              = Organization Name (eg, company)
+0.organizationName_default      = Testcorp
+commonName                      = Common Name
+commonName_default              = Alice
+commonName_max                  = 64
+emailAddress                    = Email Address
+emailAddress_default            = alice@testcorp.com
+emailAddress_max                = 64
+
+[ usr_cert ]
+subjectKeyIdentifier=hash
+authorityKeyIdentifier=keyid,issuer
+subjectAltName=email:move
+
+[ smime ]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
+extendedKeyUsage = emailProtection
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always, issuer
+subjectAltName = email:copy
