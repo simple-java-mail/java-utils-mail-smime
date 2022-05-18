@@ -1,6 +1,7 @@
 [ req ]
 default_bits            = 4096
 distinguished_name      = req_distinguished_name
+x509_extensions         = x509_ext
 string_mask = utf8only
 
 [ req_distinguished_name ]
@@ -21,15 +22,13 @@ emailAddress                    = Email Address
 emailAddress_default            = alice@testcorp.com
 emailAddress_max                = 64
 
-[ usr_cert ]
-subjectKeyIdentifier=hash
-authorityKeyIdentifier=keyid,issuer
-subjectAltName=email:move
+# Section x509_ext is used when generating a self-signed certificate. I.e., openssl req -x509 ...
+[ x509_ext ]
 
-[ smime ]
-basicConstraints = CA:FALSE
-keyUsage = nonRepudiation, digitalSignature, keyEncipherment, dataEncipherment
-extendedKeyUsage = emailProtection
-subjectKeyIdentifier = hash
-authorityKeyIdentifier = keyid:always, issuer
-subjectAltName = email:copy
+subjectKeyIdentifier            = hash
+authorityKeyIdentifier          = keyid,issuer
+
+basicConstraints                = CA:FALSE
+keyUsage                        = critical, digitalSignature, nonRepudiation, keyEncipherment, dataEncipherment
+extendedKeyUsage                = clientAuth, emailProtection
+#subjectAltName                 = email:copy
