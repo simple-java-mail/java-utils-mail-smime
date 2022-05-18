@@ -14,7 +14,7 @@ import java.util.Set;
 /**
  * A wrapper around a {@link KeyStore} that can be initialized with a PKCS12
  * keystore and is used to obtain {@link SmimeKey SmimeKeys}.
- * 
+ *
  * @author Allen Petersen (akp at sourceforge dot net)
  * @author Torsten Krause (tk at markenwerk dot net)
  * @since 1.0.0
@@ -26,11 +26,11 @@ public class SmimeKeyStore {
 	/**
 	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from
 	 * the given input stream.
-	 * 
+	 *
 	 * <p>
 	 * The character array holding the password is overwritten with {@code 0s}
 	 * after it has been used.
-	 * 
+	 *
 	 * @param stream
 	 *            The {@link InputStream} to read the PKCS12 keystore from.
 	 * @param password
@@ -43,12 +43,12 @@ public class SmimeKeyStore {
 	/**
 	 * Creates a new {@code SmimeKeyStore} by loading a PKCS12 keystore from
 	 * the given input stream.
-	 * 
+	 *
 	 * <p>
 	 * If {@code discardPassword} is set to {@code true}, the character array
 	 * holding the password is overwritten with {@code 0s} after it has been
 	 * used.
-	 * 
+	 *
 	 * @param stream
 	 *            The {@link InputStream} to read the PKCS12 keystore from.
 	 * @param password
@@ -95,11 +95,11 @@ public class SmimeKeyStore {
 	/**
 	 * Returns the S/MIME key associated with the given alias, using the given
 	 * password to recover it.
-	 * 
+	 *
 	 * <p>
 	 * The character array holding the password is overwritten with {@code 0s}
 	 * after it has been used.
-	 * 
+	 *
 	 * @param alias
 	 *            The alias.
 	 * @param password
@@ -115,12 +115,12 @@ public class SmimeKeyStore {
 	/**
 	 * Returns the S/MIME key associated with the given alias, using the given
 	 * password to recover it.
-	 * 
+	 *
 	 * <p>
 	 * If {@code discardPassword} is set to {@code true}, the character array
 	 * holding the password is overwritten with {@code 0s} after it has been
 	 * used.
-	 * 
+	 *
 	 * @param alias
 	 *            The alias.
 	 * @param password
