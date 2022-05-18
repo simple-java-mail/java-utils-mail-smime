@@ -15,13 +15,8 @@ $openssl_bin genpkey -algorithm rsa -pkeyopt rsa_keygen_bits:4096 -pkeyopt rsa_k
 ### Save the private key without password protection
 $openssl_bin rsa -in ${priv_key_name}.rsakey -out ${priv_key_name}.nopass.rsakey
 
-echo "Issue certificate signing request (CSR) for the RSA key with parameters in ${certificate_config_filename}"
-$openssl_bin req -new -key ${priv_key_name}.nopass.rsakey -sha256 -out ${account_name}.csr -config ${certificate_config_filename}
-echo "Content of the certificate signing request:"
-$openssl_bin req -text -noout -in ${account_name}.csr
-
 echo "Generating self-signed certificate..."
-$openssl_bin x509 -req -days ${validity_days} -in ${account_name}.csr -signkey ${priv_key_name}.nopass.rsakey -sha256 -out ${account_name}.crt -extensions smime -extfile ${certificate_config_filename}
+$openssl_bin req -outform PEM -out ${account_name}.pem -key ${priv_key_name}.nopass.rsakey -keyform PEM -x509 -nodes -batch -days $validity_days -config $certificate_config_filename -pkeyopt rsa_keygen_bits:2048 -sha256
 
 echo "Generating .p12 file with certificate and private key..."
-$openssl_bin pkcs12 -export -in ${account_name}.crt -inkey ${priv_key_name}.nopass.rsakey -out ${account_name}.p12
+$openssl_bin pkcs12 -export -in ${account_name}.pem -inkey ${priv_key_name}.nopass.rsakey -out ${account_name}.p12
