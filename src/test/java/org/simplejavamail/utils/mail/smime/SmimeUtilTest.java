@@ -7,9 +7,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,20 +20,17 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Properties;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class SmimeUtilTest {
+public class SmimeUtilTest {
 
-    private static final String SignatureAlgorithmRsa = "SHA256withRSA";
     private static final String SignatureAlgorithmRsaPss = "SHA256WITHRSAANDMGF1";
     private SmimeKeyStore alicesKeyStore;
     private SmimeKeyStore bobsKeyStore;
     private Session mailSession;
 
-    @BeforeAll
-    void setup() throws MessagingException, KeyStoreException, NoSuchProviderException, CertificateException, IOException, NoSuchAlgorithmException {
+    @Before
+    public void setup() throws MessagingException, KeyStoreException, NoSuchProviderException, CertificateException, IOException, NoSuchAlgorithmException {
         Security.addProvider(new BouncyCastleProvider());
         InputStream alicesKeystoreStream = this.getClass().getClassLoader().getResourceAsStream("alice.p12");
         this.alicesKeyStore = new SmimeKeyStore(alicesKeystoreStream, "alice".toCharArray());
@@ -55,46 +51,43 @@ class SmimeUtilTest {
     }
 
     @Test
-    void SuccessfullySignAndValidate() throws MessagingException, IOException {
+    public void SuccessfullySignAndValidate() throws MessagingException, IOException {
         MimeMessage testMessage = createTestMessage("alice@testcorp.com", "alice@testcorp.com");
         SmimeKey alicesKey = this.alicesKeyStore.getPrivateKey("alice", "alice".toCharArray());
         MimeMessage signedMessage = SmimeUtil.sign(this.mailSession, testMessage, alicesKey);
         MimeMultipart multipartContent = (MimeMultipart) signedMessage.getContent();
-        assertEquals(SmimeState.SIGNED, SmimeUtil.getStatus(multipartContent));
-        boolean isSignatureValid = SmimeUtil.checkSignature(multipartContent);
-        assertTrue(isSignatureValid);
+        assertThat(SmimeUtil.getStatus(multipartContent)).isEqualTo(SmimeState.SIGNED);
+        assertThat(SmimeUtil.checkSignature(multipartContent)).isTrue();
     }
 
     @Test
-    void SuccessfullyEnvelopeAndDecryptDefault() throws MessagingException {
+    public void SuccessfullyEnvelopeAndDecryptDefault() throws MessagingException {
         MimeMessage testMessage = createTestMessage("alice@testcorp.com", "alice@testcorp.com");
         SmimeKey alicesKey = this.alicesKeyStore.getPrivateKey("alice", "alice".toCharArray());
         X509Certificate alicesCert = alicesKey.getCertificate();
         MimeMessage encryptedMessage = SmimeUtil.encrypt(this.mailSession,
                 SmimeUtil.sign(this.mailSession, testMessage, alicesKey),
                 alicesCert);
-        assertEquals(SmimeState.ENCRYPTED, SmimeUtil.getStatus((encryptedMessage)));
+        assertThat(SmimeUtil.getStatus((encryptedMessage))).isEqualTo(SmimeState.ENCRYPTED);
         MimeMessage decryptedMessage = SmimeUtil.decrypt(this.mailSession, encryptedMessage, alicesKey);
-        boolean isSignatureValid = SmimeUtil.checkSignature(decryptedMessage);
-        assertTrue(isSignatureValid);
+        assertThat(SmimeUtil.checkSignature(decryptedMessage)).isTrue();
     }
 
     @Test
-    void SuccessfullyEnvelopeAndDecrypt() throws MessagingException {
+    public void SuccessfullyEnvelopeAndDecrypt() throws MessagingException {
         MimeMessage testMessage = createTestMessage("alice@testcorp.com", "alice@testcorp.com");
         SmimeKey alicesKey = this.alicesKeyStore.getPrivateKey("alice", "alice".toCharArray());
         X509Certificate alicesCert = alicesKey.getCertificate();
         MimeMessage encryptedMessage = SmimeUtil.encrypt(this.mailSession,
                 SmimeUtil.sign(this.mailSession, testMessage, alicesKey, SignatureAlgorithmRsaPss),
                 alicesCert, KeyEncapsulationAlgorithm.RSA_OAEP_SHA256, CMSAlgorithm.AES256_CBC);
-        assertEquals(SmimeState.ENCRYPTED, SmimeUtil.getStatus((encryptedMessage)));
+        assertThat(SmimeUtil.getStatus((encryptedMessage))).isEqualTo(SmimeState.ENCRYPTED);
         MimeMessage decryptedMessage = SmimeUtil.decrypt(this.mailSession, encryptedMessage, alicesKey);
-        boolean isSignatureValid = SmimeUtil.checkSignature(decryptedMessage);
-        assertTrue(isSignatureValid);
+        assertThat(SmimeUtil.checkSignature(decryptedMessage)).isTrue();
     }
 
     @Test
-    void AliceToBoEnvelopeAndDecrypt() throws MessagingException {
+    public void AliceToBoEnvelopeAndDecrypt() throws MessagingException {
         MimeMessage testMessage = createTestMessage("alice@testcorp.com", "bob@testcorp.com");
         SmimeKey alicesKey = this.alicesKeyStore.getPrivateKey("alice", "alice".toCharArray());
         SmimeKey bobsKey = this.bobsKeyStore.getPrivateKey("bob", "bob".toCharArray());
@@ -102,14 +95,13 @@ class SmimeUtilTest {
         MimeMessage encryptedMessage = SmimeUtil.encrypt(this.mailSession,
                 SmimeUtil.sign(this.mailSession, testMessage, alicesKey, SignatureAlgorithmRsaPss),
                 bobsCert, KeyEncapsulationAlgorithm.RSA_OAEP_SHA512, CMSAlgorithm.AES256_GCM);
-        assertEquals(SmimeState.ENCRYPTED, SmimeUtil.getStatus((encryptedMessage)));
+        assertThat(SmimeUtil.getStatus((encryptedMessage))).isEqualTo(SmimeState.ENCRYPTED);
         MimeMessage decryptedMessage = SmimeUtil.decrypt(this.mailSession, encryptedMessage, bobsKey);
-        boolean isSignatureValid = SmimeUtil.checkSignature(decryptedMessage);
-        assertTrue(isSignatureValid);
+        assertThat(SmimeUtil.checkSignature(decryptedMessage)).isTrue();
     }
 
     @Test
-    void BobToAliceEnvelopeAndDecrypt() throws MessagingException {
+    public void BobToAliceEnvelopeAndDecrypt() throws MessagingException {
         MimeMessage testMessage = createTestMessage("bob@testcorp.com", "alice@testcorp.com");
         SmimeKey bobsKey = this.bobsKeyStore.getPrivateKey("bob", "bob".toCharArray());
         SmimeKey alicesKey = this.alicesKeyStore.getPrivateKey("alice", "alice".toCharArray());
@@ -117,9 +109,8 @@ class SmimeUtilTest {
         MimeMessage encryptedMessage = SmimeUtil.encrypt(this.mailSession,
                 SmimeUtil.sign(this.mailSession, testMessage, bobsKey, SignatureAlgorithmRsaPss),
                 alicesCert, KeyEncapsulationAlgorithm.RSA_OAEP_SHA384, CMSAlgorithm.AES192_CCM);
-        assertEquals(SmimeState.ENCRYPTED, SmimeUtil.getStatus((encryptedMessage)));
+        assertThat(SmimeUtil.getStatus((encryptedMessage))).isEqualTo(SmimeState.ENCRYPTED);
         MimeMessage decryptedMessage = SmimeUtil.decrypt(this.mailSession, encryptedMessage, alicesKey);
-        boolean isSignatureValid = SmimeUtil.checkSignature(decryptedMessage);
-        assertTrue(isSignatureValid);
+        assertThat(SmimeUtil.checkSignature(decryptedMessage)).isTrue();
     }
 }

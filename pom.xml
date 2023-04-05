@@ -3,33 +3,28 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-<!--	<parent>-->
-<!--		<groupId>com.github.bbottema</groupId>-->
-<!--		<artifactId>standard-project-parent</artifactId>-->
-<!--		<version>1.0.24</version>-->
-<!--	</parent>-->
+	<parent>
+		<groupId>com.github.bbottema</groupId>
+		<artifactId>standard-project-parent</artifactId>
+		<version>1.0.24</version>
+	</parent>
 
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
 	<packaging>jar</packaging>
 	<name>utils-mail-smime</name>
-	<version>2.1.0-SNAPSHOT</version>
+	<version>2.0.1</version>
 	<description>An S/MIME library for JavaMail</description>
 	<url>http:///github.com/bbottema/java-utils-mail-smime</url>
 	<inceptionYear>2021</inceptionYear>
 
 	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<automaticModuleName>com.github.bbottema.java-utils-mail-smime</automaticModuleName>
 		<!-- license plugin, see possible types here: -->
 		<!-- https://github.com/mathieucarbou/license-maven-plugin/tree/master/license-maven-plugin/src/main/resources/com/mycila/maven/plugin/license/templates -->
 		<license.type>com/mycila/maven/plugin/license/templates/APACHE-2.txt</license.type>
 		<license.owner.name>Benny Bottema</license.owner.name>
 		<license.owner.email>benny@bennybottema.com</license.owner.email>
-		<junit.version>5.8.2</junit.version>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<scm>
@@ -77,18 +72,6 @@
 		<url>https://github.com/bbottema/java-utils-mail-smime/issues</url>
 	</issueManagement>
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.junit</groupId>
-				<artifactId>junit-bom</artifactId>
-				<version>${junit.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
 	<dependencies>
 		<dependency><!-- Gives us @NotNull and @Nullable -->
 			<groupId>org.jetbrains</groupId>
@@ -122,17 +105,5 @@
 			<artifactId>jakarta.mail</artifactId>
 			<version>2.0.1</version>
 		</dependency>
-
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
-
 </project>
