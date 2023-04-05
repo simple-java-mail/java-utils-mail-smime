@@ -13,11 +13,16 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>2.0.0</version>
+	<version>2.1.0</version>
 </dependency>
 ```
 
 ## Change history
+
+v2.1.0 (05-04-2023)
+
+- [#3](https://github.com/simple-java-mail/java-utils-mail-smime/issues/3) Feature: Make cryptographic algorithms configurable
+
 
 v2.0.1 (31-01-2022)
 
