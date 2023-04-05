@@ -59,9 +59,9 @@ import java.util.*;
  */
 public final class SmimeUtil {
 
-    private static final String defaultSignatureAlgorithmName = "SHA256withRSA";
-    private static final KeyEncapsulationAlgorithm defaultKeyEncapsulationAlgorithm = KeyEncapsulationAlgorithm.RSA;
-    private static final ASN1ObjectIdentifier defaultCipher =  CMSAlgorithm.DES_EDE3_CBC;
+    private static final String DEFAULT_SIGNATURE_ALGORITHM_NAME = "SHA256withRSA";
+    private static final KeyEncapsulationAlgorithm DEFAULT_KEY_ENCAPSULATION_ALGORITHM = KeyEncapsulationAlgorithm.RSA;
+    private static final ASN1ObjectIdentifier DEFAULT_CIPHER =  CMSAlgorithm.DES_EDE3_CBC;
 
     static {
         if (null == Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) {
@@ -95,7 +95,7 @@ public final class SmimeUtil {
      * @return The new S/MIME encrypted {@link MimeMessage}.
      */
     public static MimeMessage encrypt(Session session, MimeMessage mimeMessage, X509Certificate certificate) {
-        return encrypt(session, mimeMessage, certificate, defaultKeyEncapsulationAlgorithm, defaultCipher);
+        return encrypt(session, mimeMessage, certificate, DEFAULT_KEY_ENCAPSULATION_ALGORITHM, DEFAULT_CIPHER);
     }
 
     /**
@@ -139,7 +139,7 @@ public final class SmimeUtil {
      * @return The new S/MIME encrypted {@link MimeBodyPart}.
      */
     public static MimeBodyPart encrypt(MimeBodyPart mimeBodyPart, X509Certificate certificate) {
-        return encrypt(mimeBodyPart, certificate, defaultKeyEncapsulationAlgorithm, defaultCipher);
+        return encrypt(mimeBodyPart, certificate, DEFAULT_KEY_ENCAPSULATION_ALGORITHM, DEFAULT_CIPHER);
     }
 
     /**
@@ -322,7 +322,7 @@ public final class SmimeUtil {
      * @return The new S/MIME signed {@link MimeBodyPart}.
      */
     public static MimeBodyPart sign(MimeBodyPart mimeBodyPart, SmimeKey smimeKey) {
-        return sign(mimeBodyPart, smimeKey, defaultSignatureAlgorithmName);
+        return sign(mimeBodyPart, smimeKey, DEFAULT_SIGNATURE_ALGORITHM_NAME);
     }
 
     /**
@@ -416,7 +416,7 @@ public final class SmimeUtil {
      * @return The new S/MIME signed {@link MimeMessage} or {@link SMTPMessage}.
      */
     public static <T extends MimeMessage> T sign(Session session, T mimeMessage, SmimeKey smimeKey) {
-        return sign(session, mimeMessage, smimeKey, defaultSignatureAlgorithmName);
+        return sign(session, mimeMessage, smimeKey, DEFAULT_SIGNATURE_ALGORITHM_NAME);
     }
 
     /**
