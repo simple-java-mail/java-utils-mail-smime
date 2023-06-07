@@ -13,11 +13,16 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>2.1.0</version>
+	<version>2.1.1</version>
 </dependency>
 ```
 
 ## Change history
+
+v2.1.1 (07-06-2023)
+
+- [#4](https://github.com/simple-java-mail/java-utils-mail-smime/issues/4) Enhancement: Add support for fixing MessageID
+
 
 v2.1.0 (05-04-2023)
 
