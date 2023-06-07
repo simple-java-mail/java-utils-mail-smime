@@ -33,6 +33,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter;
 import org.bouncycastle.util.Store;
+import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.spec.OAEPParameterSpec;
 import javax.crypto.spec.PSource;
@@ -87,15 +88,14 @@ public final class SmimeUtil {
     /**
      * Encrypts a MIME message and yields a new S/MIME encrypted MIME message.
      *
-     * @param session     The {@link Session} that is used in conjunction with the
-     *                    original {@link MimeMessage}.
+     * @param session     The {@link Session} that is used in conjunction with the original {@link MimeMessage}.
+     * @param messageId   Optional MessageID that should be preserved on the encrypted MimeMessage result.
      * @param mimeMessage The original {@link MimeMessage} to be encrypted.
-     * @param certificate The {@link X509Certificate} used to obtain the
-     *                    {@link PublicKey} to encrypt the original message with.
+     * @param certificate The {@link X509Certificate} used to obtain the {@link PublicKey} to encrypt the original message with.
      * @return The new S/MIME encrypted {@link MimeMessage}.
      */
-    public static MimeMessage encrypt(Session session, MimeMessage mimeMessage, X509Certificate certificate) {
-        return encrypt(session, mimeMessage, certificate, DEFAULT_KEY_ENCAPSULATION_ALGORITHM, DEFAULT_CIPHER);
+    public static MimeMessage encrypt(Session session, @Nullable String messageId, MimeMessage mimeMessage, X509Certificate certificate) {
+        return encrypt(session, mimeMessage, messageId, certificate, DEFAULT_KEY_ENCAPSULATION_ALGORITHM, DEFAULT_CIPHER);
     }
 
     /**
@@ -104,6 +104,7 @@ public final class SmimeUtil {
      * @param session                   The {@link Session} that is used in conjunction with the
      *                                  original {@link MimeMessage}.
      * @param mimeMessage               The original {@link MimeMessage} to be encrypted.
+     * @param messageId                 Optional MessageID that should be preserved on the encrypted MimeMessage result.
      * @param certificate               The {@link X509Certificate} used to obtain the
      *                                  {@link PublicKey} to encrypt the original message with.
      * @param keyEncapsulationAlgorithm Algorithm used to encapsulate the symmetric encryption key.
@@ -111,9 +112,9 @@ public final class SmimeUtil {
      * @param cmsAlgorithm              Encryption algorithm for symmetric content encryption.
      * @return The new S/MIME encrypted {@link MimeMessage}.
      */
-    public static MimeMessage encrypt(Session session, MimeMessage mimeMessage, X509Certificate certificate, KeyEncapsulationAlgorithm keyEncapsulationAlgorithm, ASN1ObjectIdentifier cmsAlgorithm) {
+    public static MimeMessage encrypt(Session session, MimeMessage mimeMessage, @Nullable String messageId, X509Certificate certificate, KeyEncapsulationAlgorithm keyEncapsulationAlgorithm, ASN1ObjectIdentifier cmsAlgorithm) {
         try {
-            MimeMessage encryptedMimeMessage = new MimeMessage(session);
+            MimeMessage encryptedMimeMessage = new SmimeMessageIdFixingMimeMessage(session, messageId);
             copyHeaders(mimeMessage, encryptedMimeMessage);
 
             SMIMEEnvelopedGenerator generator = prepareGenerator(certificate, keyEncapsulationAlgorithm);
@@ -408,34 +409,31 @@ public final class SmimeUtil {
     /**
      * Signs a MIME message and yields a new S/MIME signed MIME message.
      *
-     * @param session     The {@link Session} that is used in conjunction with the
-     *                    original {@link MimeMessage}.
+     * @param session     The {@link Session} that is used in conjunction with the original {@link MimeMessage}.
+     * @param messageId   Optional MessageID that should be preserved on the signed MimeMessage.
      * @param mimeMessage The original {@link MimeMessage} or {@link SMTPMessage} to be signed.
-     * @param smimeKey    The {@link SmimeKey} used to obtain the {@link PrivateKey} to
-     *                    sign the original message with.
+     * @param smimeKey    The {@link SmimeKey} used to obtain the {@link PrivateKey} to sign the original message with.
      * @return The new S/MIME signed {@link MimeMessage} or {@link SMTPMessage}.
      */
-    public static <T extends MimeMessage> T sign(Session session, T mimeMessage, SmimeKey smimeKey) {
-        return sign(session, mimeMessage, smimeKey, DEFAULT_SIGNATURE_ALGORITHM_NAME);
+    public static <T extends MimeMessage> T sign(Session session, @Nullable String messageId, T mimeMessage, SmimeKey smimeKey) {
+        return sign(session, messageId, mimeMessage, smimeKey, DEFAULT_SIGNATURE_ALGORITHM_NAME);
     }
 
     /**
      * Signs a MIME message and yields a new S/MIME signed MIME message.
      *
-     * @param session       The {@link Session} that is used in conjunction with the
-     *                      original {@link MimeMessage}.
+     * @param session       The {@link Session} that is used in conjunction with the original {@link MimeMessage}.
+     * @param messageId     Optional MessageID that should be preserved on the signed MimeMessage.
      * @param mimeMessage   The original {@link MimeMessage} or {@link SMTPMessage} to be signed.
-     * @param smimeKey      The {@link SmimeKey} used to obtain the {@link PrivateKey} to
-     *                      sign the original message with.
-     * @param algorithmName The name of the signature algorithm to use. Must be an algorithm
-     *                      supported by the Bouncy Castle security provider.
+     * @param smimeKey      The {@link SmimeKey} used to obtain the {@link PrivateKey} to sign the original message with.
+     * @param algorithmName The name of the signature algorithm to use. Must be an algorithm supported by the Bouncy Castle security provider.
      * @return The new S/MIME signed {@link MimeMessage} or {@link SMTPMessage}.
      */
-    public static <T extends MimeMessage> T sign(Session session, T mimeMessage, SmimeKey smimeKey, String algorithmName) {
+    public static <T extends MimeMessage> T sign(Session session, @Nullable String messageId, T mimeMessage, SmimeKey smimeKey, String algorithmName) {
         //noinspection unchecked
         return (mimeMessage instanceof SMTPMessage)
-                ? sign(mimeMessage, (T) new SMTPMessage(session), smimeKey, algorithmName)
-                : sign(mimeMessage, (T) new MimeMessage(session), smimeKey, algorithmName);
+                ? sign(mimeMessage, (T) new SmimeMessageIdFixingSMTPMessage(session, messageId), smimeKey, algorithmName)
+                : sign(mimeMessage, (T) new SmimeMessageIdFixingMimeMessage(session, messageId), smimeKey, algorithmName);
     }
 
     private static <T extends MimeMessage> T sign(T mimeMessage, T signedMessage, SmimeKey smimeKey, String algorithmName) {
