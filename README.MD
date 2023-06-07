@@ -21,7 +21,7 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 
 v2.1.1 (07-06-2023)
 
-- [#4](https://github.com/simple-java-mail/java-utils-mail-smime/issues/4) Enhancement: Add support for fixing MessageID
+- [#5](https://github.com/simple-java-mail/java-utils-mail-smime/issues/5) Enhancement: Add support for fixing MessageID
 
 
 v2.1.0 (05-04-2023)
