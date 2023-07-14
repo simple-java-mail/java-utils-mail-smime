@@ -13,11 +13,16 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>2.1.1</version>
+	<version>2.1.2</version>
 </dependency>
 ```
 
 ## Change history
+
+v2.1.2 (14-07-2023)
+
+- Security: updated bouncy castle to 1.75, which should solve https://security.snyk.io/vuln/SNYK-JAVA-ORGBOUNCYCASTLE-5771489
+
 
 v2.1.1 (07-06-2023)
 

@@ -13,7 +13,7 @@
 	<artifactId>utils-mail-smime</artifactId>
 	<packaging>jar</packaging>
 	<name>utils-mail-smime</name>
-	<version>2.1.1</version>
+	<version>2.1.2</version>
 	<description>An S/MIME library for JavaMail</description>
 	<url>http:///github.com/bbottema/java-utils-mail-smime</url>
 	<inceptionYear>2021</inceptionYear>
