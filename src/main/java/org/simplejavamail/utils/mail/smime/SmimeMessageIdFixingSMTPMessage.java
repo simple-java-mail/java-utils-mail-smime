@@ -3,7 +3,6 @@ package org.simplejavamail.utils.mail.smime;
 import com.sun.mail.smtp.SMTPMessage;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
-import jakarta.mail.internet.MimeMessage;
 import org.jetbrains.annotations.Nullable;
 
 import static java.lang.String.format;
