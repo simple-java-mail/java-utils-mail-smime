@@ -182,6 +182,14 @@ private MimeMessage signMessage(Session session, MimeMessage message, String fro
 	SmimeKey smimeKey = getSmimeKeyForSender(from);
 	return SmimeUtil.sign(session, message, smimeKey);
 }
+
+private SmimeKey getSmimeKeyForSender(String from) {
+     // create your own SmimeKey from your own PKCS12 keystore
+     /* Example:
+     return new SmimeKeyStore(new ByteArrayInputStream(pkcs12ByteArray), pkcs12StorePassword)
+        .getPrivateKey(pkcs12KeyAlias, pkcs12KeyPassword);
+      */
+}
 ```
 
 #### .. to encrypt a message
