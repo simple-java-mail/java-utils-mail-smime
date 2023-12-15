@@ -656,6 +656,8 @@ public final class SmimeUtil {
     private static SmimeState getStatus(ContentType contentType) {
         if (isSmimeSignatureContentType(contentType)) {
             return SmimeState.SIGNED;
+        } if (isProbablySmimeSignatureContentType(contentType)) {
+            return SmimeState.PROBABLY_SIGNED;
         } else if (isSignatureSmimeType(contentType)) {
             return SmimeState.SIGNED_ENVELOPED;
         } else if (isSmimeEncryptionContenttype(contentType)) {
@@ -672,10 +674,14 @@ public final class SmimeUtil {
     }
 
     private static boolean isSmimeSignatureContentType(ContentType contentType) {
-        String baseContentType = contentType.getBaseType();
         String protocol = contentType.getParameter("protocol");
-        return baseContentType.equalsIgnoreCase("multipart/signed")
+        return contentType.getBaseType().equalsIgnoreCase("multipart/signed")
                 && protocol != null && isSmimeSignatureProtocoll(protocol);
+    }
+
+    private static boolean isProbablySmimeSignatureContentType(ContentType contentType) {
+        String protocol = contentType.getParameter("protocol");
+        return contentType.getBaseType().equalsIgnoreCase("multipart/signed") && protocol == null;
     }
 
     private static boolean isSignatureSmimeType(ContentType contentType) {
