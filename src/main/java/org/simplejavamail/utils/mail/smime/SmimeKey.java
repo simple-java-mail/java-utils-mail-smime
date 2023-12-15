@@ -66,7 +66,7 @@ public class SmimeKey {
 	 * @return The chain of {@link X509Certificate X509Certificates}.
 	 */
 	public X509Certificate[] getCertificateChain() {
-		return certificateChain.clone();
+		return certificateChain != null ? certificateChain.clone() : null;
 	}
 
 	/**
