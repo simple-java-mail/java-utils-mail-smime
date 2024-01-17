@@ -1,6 +1,5 @@
 package org.simplejavamail.utils.mail.smime;
 
-import com.sun.mail.smtp.SMTPMessage;
 import jakarta.activation.CommandMap;
 import jakarta.activation.MailcapCommandMap;
 import jakarta.mail.Header;
@@ -33,6 +32,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter;
 import org.bouncycastle.util.Store;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.spec.OAEPParameterSpec;

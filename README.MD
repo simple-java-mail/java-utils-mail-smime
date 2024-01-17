@@ -13,15 +13,16 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>2.2.0</version>
+	<version>2.3.0</version>
 </dependency>
 ```
 
 ## Change history
 
-v2.2.0 (14-12-2023)
+v2.2.0 - v2.3.0
 
-- [#8](https://github.com/simple-java-mail/java-utils-mail-smime/issues/8) Enhancement: Handle Outlook's Non-Standard S/MIME Signed Messages
+- v2.3.0 (17-01-2024): [#9](https://github.com/simple-java-mail/java-utils-mail-smime/issues/9) Update to latest Jakarta+Angus dependencies
+- v2.2.0 (14-12-2023): [#8](https://github.com/simple-java-mail/java-utils-mail-smime/issues/8) Enhancement: Handle Outlook's Non-Standard S/MIME Signed Messages
 
 
 v2.1.2 (14-07-2023)

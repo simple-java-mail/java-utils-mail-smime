@@ -1,8 +1,8 @@
 package org.simplejavamail.utils.mail.smime;
 
-import com.sun.mail.smtp.SMTPMessage;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Session;
+import org.eclipse.angus.mail.smtp.SMTPMessage;
 import org.jetbrains.annotations.Nullable;
 
 import static java.lang.String.format;
