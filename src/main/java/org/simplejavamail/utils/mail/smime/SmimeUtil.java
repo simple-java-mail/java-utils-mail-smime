@@ -33,6 +33,7 @@ import org.bouncycastle.operator.OutputEncryptor;
 import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter;
 import org.bouncycastle.util.Store;
 import org.eclipse.angus.mail.smtp.SMTPMessage;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.crypto.spec.OAEPParameterSpec;
@@ -60,9 +61,14 @@ import java.util.*;
  */
 public final class SmimeUtil {
 
-    private static final String DEFAULT_SIGNATURE_ALGORITHM_NAME = "SHA256withRSA";
-    private static final KeyEncapsulationAlgorithm DEFAULT_KEY_ENCAPSULATION_ALGORITHM = KeyEncapsulationAlgorithm.RSA;
-    private static final ASN1ObjectIdentifier DEFAULT_CIPHER =  CMSAlgorithm.DES_EDE3_CBC;
+    /**
+     * Unfortunately, these constants are not available in the Bouncy Castle, and they have to be passed as strings.
+     *
+     * @see org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder for a list of supported algorithms.
+     */
+    public static final String DEFAULT_SIGNATURE_ALGORITHM_NAME = "SHA256withRSA";
+    public static final KeyEncapsulationAlgorithm DEFAULT_KEY_ENCAPSULATION_ALGORITHM = KeyEncapsulationAlgorithm.RSA;
+    public static final ASN1ObjectIdentifier DEFAULT_CIPHER =  CMSAlgorithm.DES_EDE3_CBC;
 
     static {
         if (null == Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) {
@@ -190,25 +196,12 @@ public final class SmimeUtil {
     private static SMIMEEnvelopedGenerator prepareGenerator(X509Certificate certificate,
                                                             KeyEncapsulationAlgorithm keyEncapsulationAlgorithm)
             throws CertificateEncodingException, InvalidAlgorithmParameterException {
-        JceKeyTransRecipientInfoGenerator infoGenerator;
+        final JceKeyTransRecipientInfoGenerator infoGenerator;
         if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA) {
             infoGenerator = new JceKeyTransRecipientInfoGenerator(certificate);
         } else {
-            String digestName;
-            if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA224) {
-                digestName = "SHA-234";
-            } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA256) {
-                digestName = "SHA-256";
-            } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA384) {
-                digestName = "SHA-384";
-            } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA512) {
-                digestName = "SHA-512";
-            } else {
-                throw new InvalidAlgorithmParameterException("Unknown S/MIME key encapsulation algorithm: "
-                        + keyEncapsulationAlgorithm.name());
-            }
-            JcaAlgorithmParametersConverter paramsConverter = new JcaAlgorithmParametersConverter();
-            AlgorithmIdentifier oaepParams = paramsConverter.getAlgorithmIdentifier(
+            String digestName = determineDigestName(keyEncapsulationAlgorithm);
+            AlgorithmIdentifier oaepParams = new JcaAlgorithmParametersConverter().getAlgorithmIdentifier(
                     PKCSObjectIdentifiers.id_RSAES_OAEP, new OAEPParameterSpec(
                             digestName, "MGF1", new MGF1ParameterSpec(digestName), PSource.PSpecified.DEFAULT));
             infoGenerator = new JceKeyTransRecipientInfoGenerator(certificate, oaepParams);
@@ -217,6 +210,22 @@ public final class SmimeUtil {
         SMIMEEnvelopedGenerator generator = new SMIMEEnvelopedGenerator();
         generator.addRecipientInfoGenerator(infoGenerator);
         return generator;
+    }
+
+    @NotNull
+    private static String determineDigestName(KeyEncapsulationAlgorithm keyEncapsulationAlgorithm) throws InvalidAlgorithmParameterException {
+        if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA224) {
+            return "SHA-234";
+        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA256) {
+            return "SHA-256";
+        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA384) {
+            return "SHA-384";
+        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA512) {
+            return "SHA-512";
+        } else {
+            throw new InvalidAlgorithmParameterException("Unknown S/MIME key encapsulation algorithm: "
+                    + keyEncapsulationAlgorithm.name());
+        }
     }
 
     private static OutputEncryptor prepareEncryptor(ASN1ObjectIdentifier cmsAlgorithm) throws CMSException {
