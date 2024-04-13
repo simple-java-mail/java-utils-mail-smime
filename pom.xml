@@ -6,7 +6,7 @@
 	<parent>
 		<groupId>com.github.bbottema</groupId>
 		<artifactId>standard-project-parent</artifactId>
-		<version>1.0.24</version>
+		<version>1.0.31</version>
 	</parent>
 
 	<groupId>org.simplejavamail</groupId>
@@ -83,7 +83,7 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcjmail-jdk15to18</artifactId>
-			<version>1.75</version>
+			<version>1.78</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.mail</groupId>
