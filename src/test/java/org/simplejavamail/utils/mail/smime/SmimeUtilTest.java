@@ -7,8 +7,8 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,7 +29,7 @@ public class SmimeUtilTest {
     private SmimeKeyStore bobsKeyStore;
     private Session mailSession;
 
-    @Before
+    @BeforeEach
     public void setup() throws MessagingException, KeyStoreException, NoSuchProviderException, CertificateException, IOException, NoSuchAlgorithmException {
         Security.addProvider(new BouncyCastleProvider());
         InputStream alicesKeystoreStream = this.getClass().getClassLoader().getResourceAsStream("alice.p12");
