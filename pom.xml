@@ -82,8 +82,8 @@
 
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcjmail-jdk15to18</artifactId>
-			<version>1.78</version>
+			<artifactId>bcjmail-jdk18on</artifactId>
+			<version>1.78.1</version>
 		</dependency>
 		<dependency>
 			<groupId>jakarta.mail</groupId>
