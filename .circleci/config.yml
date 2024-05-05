@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  github-maven-deploy: github-maven-deploy/github-maven-deploy@dev:third
+  github-maven-deploy: github-maven-deploy/github-maven-deploy@dev:four
 
 mvn-build-test-command: &mvn-build-test-command
   mvn-build-test-command: mvn verify -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dlicense.skip=true
