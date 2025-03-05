@@ -13,14 +13,16 @@ Note: This is a revival / continuation of the archived project markenwerk/java-u
 <dependency>
 	<groupId>org.simplejavamail</groupId>
 	<artifactId>utils-mail-smime</artifactId>
-	<version>2.3.3</version>
+	<version>2.3.12</version>
 </dependency>
 ```
 
 ## Change history
 
-v2.2.0 - v2.3.3
+v2.2.0 - v2.3.12
 
+- v2.3.12 (05-03-2025): bumped jakarta.mail-api to 2.1.3, and angus-mail to 2.0.3
+- v2.3.xx -- upgraded release pipeline, no real changes
 - v2.3.3 (25-04-2024): updated bouncycastle dependency to solve vulnerability (continued)
 - v2.3.2 (13-04-2024): updated dependency to solve vulnerability in bouncycastle
 - v2.3.1 (19-03-2024): [#10](https://github.com/simple-java-mail/java-utils-mail-smime/issues/10) Make default algorithms public and document which signing algorithms are available
