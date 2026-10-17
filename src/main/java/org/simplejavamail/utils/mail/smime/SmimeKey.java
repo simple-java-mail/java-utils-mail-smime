@@ -1,12 +1,16 @@
 package org.simplejavamail.utils.mail.smime;
 
-import java.security.Principal;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
+
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * A wrapper around a {@link PrivateKey} and a chain of {@link X509Certificate
@@ -20,7 +24,7 @@ public class SmimeKey {
 
 	private final PrivateKey privateKey;
 	private final X509Certificate[] certificateChain;
-	private List<String> addresses;
+	private volatile List<String> addresses;
 
 	/**
 	 * Create a new {@code SmimeKey} with the given private key and certificate
@@ -36,7 +40,7 @@ public class SmimeKey {
 	 */
 	public SmimeKey(PrivateKey privateKey, X509Certificate... certificateChain) {
 		this.privateKey = privateKey;
-		this.certificateChain = certificateChain;
+		this.certificateChain = certificateChain != null ? certificateChain.clone() : null;
 	}
 
 	/**
@@ -89,18 +93,17 @@ public class SmimeKey {
 		try {
 			X509Certificate certificate = getCertificate();
 			if (null != certificate) {
-				Principal principal = certificate.getSubjectX500Principal();
-				if (null != principal) {
-					String name = principal.getName();
-					StringTokenizer tokenizer = new StringTokenizer(name, ",");
-					while (tokenizer.hasMoreTokens()) {
-						String next = tokenizer.nextToken();
-						if (next.startsWith("E="))
-							addresses.add(next.substring(2));
+				X500Name subject = X500Name.getInstance(certificate.getSubjectX500Principal().getEncoded());
+				for (RDN rdn : subject.getRDNs(BCStyle.EmailAddress)) {
+					for (AttributeTypeAndValue attribute : rdn.getTypesAndValues()) {
+						if (BCStyle.EmailAddress.equals(attribute.getType()) && attribute.getValue() instanceof ASN1String) {
+							addresses.add(((ASN1String) attribute.getValue()).getString());
+						}
 					}
 				}
 			}
 		} catch (Exception e) {
+			// Preserve the historical best-effort contract for unreadable certificates.
 		}
 		this.addresses = Collections.unmodifiableList(addresses);
 	}
