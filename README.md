@@ -21,7 +21,7 @@ Use it with existing `MimeMessage` and `MimeBodyPart` objects; your application 
 <dependency>
     <groupId>org.simplejavamail</groupId>
     <artifactId>utils-mail-smime</artifactId>
-    <version>2.3.12</version>
+    <version>2.3.13</version>
 </dependency>
 ```
 
@@ -29,9 +29,9 @@ Use it with existing `MimeMessage` and `MimeBodyPart` objects; your application 
 
 Requires Java 8 or later and Jakarta Mail (`jakarta.mail.*`). The current dependency baseline is Bouncy Castle `bcjmail-jdk18on` 1.78.1, Jakarta Mail API 2.1.3, and Angus Mail 2.0.3. Keep Bouncy Castle's related artifacts at matching versions when managing them in your application.
 
-The maintenance changes below retain all public classes, method signatures, enum values, and default algorithms. The Maven version stays at the last release until the release workflow publishes another version.
+Release 2.3.13 retains all public classes, method signatures, enum values, and default algorithms.
 
-The unreleased build declares the automatic JPMS module name `org.simplejavamail.utils.mail.smime`. Release 2.3.12 contains an invalid module name; its ordinary classpath use is unaffected.
+Since 2.3.13, the automatic JPMS module name is `org.simplejavamail.utils.mail.smime`. Release 2.3.12 contains an invalid module name; its ordinary classpath use is unaffected.
 
 For a modular application, put the runtime dependencies on the module path and resolve Bouncy Castle's Jakarta S/MIME module as well as the Mail API:
 
@@ -88,17 +88,13 @@ Load a signing or decryption key from PKCS12. The caller owns and closes the inp
 ```java
 import org.simplejavamail.utils.mail.smime.SmimeKey;
 import org.simplejavamail.utils.mail.smime.SmimeKeyStore;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.security.Security;
 
 public final class KeyExample {
     public static SmimeKey load(Path path, String alias, char[] storePassword, char[] keyPassword)
             throws Exception {
-        // Required by 2.3.12; the unreleased maintenance build also registers BC automatically.
-        Security.addProvider(new BouncyCastleProvider());
         try (InputStream input = Files.newInputStream(path)) {
             SmimeKeyStore store = new SmimeKeyStore(input, storePassword);
             SmimeKey key = store.getPrivateKey(alias, keyPassword);
@@ -113,7 +109,7 @@ public final class KeyExample {
 
 Use `getPrivateKeyAliases()` when the alias is unknown. Certificate-only entries are excluded and a missing private-key alias returns `null`. Key-password handling is delegated to the PKCS12 provider; it is not a second authentication boundary after the store has been loaded.
 
-The maintenance build registers the regular `BC` provider when needed and retains an already installed provider. With a `MailcapCommandMap`, it also registers the S/MIME content handlers. Applications using another `CommandMap` retain ownership of their handlers.
+The library registers the regular `BC` provider when needed and retains an already installed provider. With a `MailcapCommandMap`, it also registers the S/MIME content handlers. Applications using another `CommandMap` retain ownership of their handlers.
 
 For encryption, load the recipient's public certificate with `CertificateFactory.getInstance("X.509")`. Never send the private key or its PKCS12 file to the recipient. Standard JDK tools can inspect aliases and export a public PEM certificate:
 
@@ -198,7 +194,7 @@ Licensed under [Apache 2.0](LICENSE-2.0.txt), with permission from the original 
 
 ## Change history
 
-### Unreleased
+### v2.3.13 (17-10-2026)
 
 - Preserve repeated transport headers, MIME content headers, Unicode body parts, attachments, and SMTP delivery options during S/MIME processing.
 - Fix RSA-OAEP SHA-224 and preserve the encoded certificate issuer in signing key preferences.

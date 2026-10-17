@@ -1,8 +1,8 @@
 # S/MIME maintenance review — 17 October 2026
 
 Baseline: `bdfe3be` on `master`, version `2.3.12`. Work branch:
-`codex/smime-maintenance`. This is a patch maintenance candidate; no release or
-runtime dependency upgrade is included.
+`codex/smime-maintenance`. These changes form patch release `2.3.13`; no runtime
+dependency upgrade is included.
 
 The project now has a substantial compatibility suite and smaller internal
 components behind the existing API. Existing application calls remain valid.
