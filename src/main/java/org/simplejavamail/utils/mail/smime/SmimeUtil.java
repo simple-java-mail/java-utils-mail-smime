@@ -171,9 +171,13 @@ public final class SmimeUtil {
     }
 
     private static void copyHeaders(Enumeration<Header> headers, MimeMessage toMessage) throws MessagingException {
-        while (headers.hasMoreElements()) {
-            Header header = headers.nextElement();
-            toMessage.setHeader(header.getName(), header.getValue());
+        List<Header> copiedHeaders = Collections.list(headers);
+        for (Header header : copiedHeaders) {
+            toMessage.removeHeader(header.getName());
+        }
+        for (Header header : copiedHeaders) {
+            // addHeader prepends Received headers; raw lines retain the original trace order.
+            toMessage.addHeaderLine(header.getName() + ": " + header.getValue());
         }
     }
 
@@ -199,7 +203,7 @@ public final class SmimeUtil {
     @NotNull
     private static String determineDigestName(KeyEncapsulationAlgorithm keyEncapsulationAlgorithm) throws InvalidAlgorithmParameterException {
         if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA224) {
-            return "SHA-234";
+            return "SHA-224";
         } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA256) {
             return "SHA-256";
         } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA384) {
@@ -304,7 +308,29 @@ public final class SmimeUtil {
     }
 
     private static void copyContent(MimeBodyPart fromBodyPart, MimeMessage toMessage) throws MessagingException, IOException {
-        toMessage.setContent(fromBodyPart.getContent(), fromBodyPart.getContentType());
+        Set<String> contentHeaders = new HashSet<>();
+        Enumeration<Header> previousHeaders = toMessage.getAllHeaders();
+        while (previousHeaders.hasMoreElements()) {
+            String name = previousHeaders.nextElement().getName();
+            if (isContentHeader(name)) {
+                contentHeaders.add(name);
+            }
+        }
+        for (String name : contentHeaders) {
+            toMessage.removeHeader(name);
+        }
+        toMessage.setDataHandler(fromBodyPart.getDataHandler());
+        Enumeration<Header> headers = fromBodyPart.getAllHeaders();
+        while (headers.hasMoreElements()) {
+            Header header = headers.nextElement();
+            if (isContentHeader(header.getName())) {
+                toMessage.addHeader(header.getName(), header.getValue());
+            }
+        }
+    }
+
+    private static boolean isContentHeader(String name) {
+        return name.regionMatches(true, 0, "Content-", 0, "Content-".length());
     }
 
     /**
@@ -332,9 +358,10 @@ public final class SmimeUtil {
     public static MimeBodyPart sign(MimeBodyPart mimeBodyPart, SmimeKey smimeKey, String algorithmName) {
         try {
             SMIMESignedGenerator generator = getGenerator(smimeKey, algorithmName);
-            MimeMultipart signedMimeMultipart = generator.generate(MimeUtil.canonicalize(mimeBodyPart));
-            MimeBodyPart signedMimeBodyPart = new MimeBodyPart();
+            MimeMultipart signedMimeMultipart = generator.generate(MimeUtil.canonicalize(prepareMimeBodyPart(mimeBodyPart, false)));
+            UpdatableMimeBodyPart signedMimeBodyPart = new UpdatableMimeBodyPart();
             signedMimeBodyPart.setContent(signedMimeMultipart);
+            signedMimeBodyPart.updateHeaders();
             return signedMimeBodyPart;
 
         } catch (Exception e) {
@@ -433,6 +460,9 @@ public final class SmimeUtil {
         try {
             copyHeaderLines(mimeMessage, signedMessage);
             copyContent(sign(extractMimeBodyPart(mimeMessage), smimeKey, algorithmName), signedMessage);
+            if (mimeMessage instanceof SMTPMessage && signedMessage instanceof SMTPMessage) {
+                copySmtpOptions((SMTPMessage) mimeMessage, (SMTPMessage) signedMessage);
+            }
             return signedMessage;
         } catch (Exception e) {
             throw handledException(e);
@@ -440,15 +470,31 @@ public final class SmimeUtil {
     }
 
     private static MimeBodyPart extractMimeBodyPart(MimeMessage mimeMessage) throws IOException, MessagingException {
-        Object content = mimeMessage.getContent();
-        UpdatableMimeBodyPart updateableMimeBodyPart = new UpdatableMimeBodyPart();
-        if (content instanceof Multipart) {
-            updateableMimeBodyPart.setContent((Multipart) content);
-        } else {
-            updateableMimeBodyPart.setContent(content, mimeMessage.getDataHandler().getContentType());
+        return prepareMimeBodyPart(mimeMessage, true);
+    }
+
+    private static MimeBodyPart prepareMimeBodyPart(MimePart source, boolean contentHeadersOnly) throws MessagingException {
+        UpdatableMimeBodyPart bodyPart = new UpdatableMimeBodyPart();
+        bodyPart.setDataHandler(source.getDataHandler());
+        Enumeration<Header> headers = source.getAllHeaders();
+        while (headers.hasMoreElements()) {
+            Header header = headers.nextElement();
+            if (!contentHeadersOnly || isContentHeader(header.getName())) {
+                bodyPart.addHeader(header.getName(), header.getValue());
+            }
         }
-        updateableMimeBodyPart.updateHeaders();
-        return updateableMimeBodyPart;
+        bodyPart.updateHeaders();
+        return bodyPart;
+    }
+
+    private static void copySmtpOptions(SMTPMessage source, SMTPMessage target) {
+        target.setEnvelopeFrom(source.getEnvelopeFrom());
+        target.setNotifyOptions(source.getNotifyOptions());
+        target.setReturnOption(source.getReturnOption());
+        target.setSendPartial(source.getSendPartial());
+        target.setAllow8bitMIME(source.getAllow8bitMIME());
+        target.setSubmitter(source.getSubmitter());
+        target.setMailExtension(source.getMailExtension());
     }
 
     /**
@@ -497,6 +543,10 @@ public final class SmimeUtil {
             @SuppressWarnings("rawtypes")
             Store certificates = smimeSigned.getCertificates();
             Iterator<SignerInformation> signerInformations = smimeSigned.getSignerInfos().getSigners().iterator();
+
+            if (!signerInformations.hasNext()) {
+                return false;
+            }
 
             while (returnValue && signerInformations.hasNext()) {
                 SignerInformation signerInformation = signerInformations.next();
@@ -679,8 +729,9 @@ public final class SmimeUtil {
 
     private static boolean isSignatureSmimeType(ContentType contentType) {
         String baseContentType = contentType.getBaseType();
-        return baseContentType.equalsIgnoreCase("application/x-pkcs7-mime")
-                && "signed-data".equals(contentType.getParameter("smime-type"));
+        return (baseContentType.equalsIgnoreCase("application/pkcs7-mime")
+                || baseContentType.equalsIgnoreCase("application/x-pkcs7-mime"))
+                && "signed-data".equalsIgnoreCase(contentType.getParameter("smime-type"));
     }
 
     private static boolean isSmimeSignatureProtocoll(String protocol) {
