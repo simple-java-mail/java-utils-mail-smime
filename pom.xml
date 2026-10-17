@@ -86,6 +86,17 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.sonatype.ossindex.maven</groupId>
+				<artifactId>ossindex-maven-plugin</artifactId>
+				<!-- Keep the parent's authenticated vulnerability audit out of the Maven lifecycle. -->
+				<executions>
+					<execution>
+						<id>audit-dependencies</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
 				<groupId>com.github.spotbugs</groupId>
 				<artifactId>spotbugs-maven-plugin</artifactId>
 				<!-- Last plugin line supporting a Java 8 build JVM; also analyzes Java 21. -->

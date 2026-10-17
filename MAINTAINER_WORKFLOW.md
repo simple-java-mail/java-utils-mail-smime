@@ -98,6 +98,12 @@ profile enforces 90% line coverage and 80% branch coverage and writes its HTML
 report to `target/site/jacoco/index.html`. Topic branches run the same build;
 release approvals and deployment jobs remain restricted to `master`.
 
+OSS Index vulnerability scanning is intentionally outside the Maven lifecycle.
+The project unbinds the parent's `audit-dependencies` execution, so builds and
+releases do not require OSS Index authentication. This is separate from Maven
+Central publishing, which uses the Central Publishing plugin and the `central`
+server in `.circleci/maven-central-settings.xml`.
+
 Keep public signatures, enum values, and cryptographic defaults stable during
 patch maintenance. Package-private helpers separate MIME adaptation, signing,
 encryption, header classification, and runtime initialization; expose a new

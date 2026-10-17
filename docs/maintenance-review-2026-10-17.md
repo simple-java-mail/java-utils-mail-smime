@@ -127,6 +127,7 @@ mvn clean verify -Pcoverage -Dmaven.javadoc.skip=true -Dlicense.skip=true
 | README examples | All three Java examples compiled by the test suite on both JDKs |
 | JPMS artifact check | Java 21 consumer compiled and ran using the packaged Java 8 JAR and runtime dependencies |
 | CircleCI configuration | `circleci config validate .circleci/config.yml` passed |
+| OSS Index removal | Inherited audit execution has phase `none`; full Java 8 verification passed without scanner execution or a skip flag |
 
 The coverage gate requires 90% lines and 80% branches. Java 8 verification used
 the Windows ROOT trust store for HTTPS; TLS verification stayed enabled. The
@@ -152,9 +153,11 @@ The library does not mutate transport Sessions to impose policy on other sends.
 The next work should be separately designed and reviewed in this order:
 
 1. **Dependency security and compatibility.** Review a coordinated Bouncy Castle
-   upgrade and the current Jakarta/Angus dependency graph. The inherited OSS
-   Index audit returned HTTP 401, so this run cannot claim a clean vulnerability
-   scan. BC 1.78.1 is an old baseline and the vendor publishes later security
+   upgrade and the current Jakarta/Angus dependency graph. Vulnerability scanning
+   is intentionally outside Maven: the inherited OSS Index audit is unbound from
+   the lifecycle at the maintainer's request, so builds and releases need no OSS
+   Index credentials. No clean vulnerability scan is claimed by this review.
+   BC 1.78.1 is an old baseline and the vendor publishes later security
    advisories. For example, [CVE-2025-8916](https://github.com/bcgit/bc-java/wiki/CVE%E2%80%902025%E2%80%908916)
    concerns PKIXCertPathReviewer, which this library does not invoke; this is
    not a blanket finding about every provider operation. Inventory the exact
