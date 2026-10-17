@@ -96,7 +96,8 @@ final class SmimeMimeSupport {
         target.setNotifyOptions(source.getNotifyOptions());
         target.setReturnOption(source.getReturnOption());
         target.setSendPartial(source.getSendPartial());
-        target.setAllow8bitMIME(source.getAllow8bitMIME());
+        // Angus can otherwise rewrite signed MIME entities and invalidate the signature.
+        target.setAllow8bitMIME(false);
         target.setSubmitter(source.getSubmitter());
         target.setMailExtension(source.getMailExtension());
     }

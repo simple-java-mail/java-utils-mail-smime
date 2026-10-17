@@ -29,6 +29,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.simplejavamail.utils.mail.smime.SmimeTestSupport.*;
 
 class SmimeSigningTest {
+    @Test
+    void defaultSignatureStillUsesTheSha256Digest() throws Exception {
+        MimeMessage signed = roundTrip(SmimeUtil.sign(SESSION, null, message(), ALICE));
+        SMIMESigned cms = new SMIMESigned((MimeMultipart) signed.getContent());
+        assertThat(cms.getSignerInfos().getSigners().iterator().next().getDigestAlgOID()).isEqualTo("2.16.840.1.101.3.4.2.1");
+        assertThat(SmimeUtil.DEFAULT_SIGNATURE_ALGORITHM_NAME).isEqualTo("SHA256withRSA");
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"SHA256withRSA", "SHA384withRSA", "SHA512withRSA", "SHA256WITHRSAANDMGF1"})
     void detachedSignaturesSurviveTheWire(String algorithm) throws Exception {
@@ -200,7 +208,7 @@ class SmimeSigningTest {
         assertThat(signed.getNotifyOptions()).isEqualTo(original.getNotifyOptions());
         assertThat(signed.getReturnOption()).isEqualTo(original.getReturnOption());
         assertThat(signed.getSendPartial()).isTrue();
-        assertThat(signed.getAllow8bitMIME()).isTrue();
+        assertThat(signed.getAllow8bitMIME()).as("signed content must not be re-encoded by SMTP").isFalse();
         assertThat(signed.getSubmitter()).isEqualTo(original.getSubmitter());
         assertThat(signed.getMailExtension()).isEqualTo(original.getMailExtension());
         assertThat(SmimeUtil.checkSignature(roundTrip(signed))).isTrue();
