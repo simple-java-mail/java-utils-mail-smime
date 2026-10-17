@@ -408,7 +408,7 @@ public final class SmimeUtil {
     private static IssuerAndSerialNumber getIssuerAndSerialNumber(SmimeKey smimeKey) {
         X509Certificate certificate = smimeKey.getCertificate();
         BigInteger serialNumber = certificate.getSerialNumber();
-        X500Name issuerName = new X500Name(certificate.getIssuerX500Principal().getName());
+        X500Name issuerName = X500Name.getInstance(certificate.getIssuerX500Principal().getEncoded());
         return new IssuerAndSerialNumber(issuerName, serialNumber);
     }
 

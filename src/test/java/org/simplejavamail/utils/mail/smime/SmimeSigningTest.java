@@ -6,6 +6,10 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.mail.util.ByteArrayDataSource;
 import org.bouncycastle.cert.jcajce.JcaCertStore;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
+import org.bouncycastle.asn1.smime.SMIMEAttributes;
 import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
@@ -17,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 
@@ -112,6 +115,30 @@ class SmimeSigningTest {
         MimeMultipart signed = generator.generate(textPart());
         assertThat(new SMIMESigned(signed).getSignerInfos().size()).isEqualTo(2);
         assertThat(SmimeUtil.checkSignature(signed)).isTrue();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void oneInvalidSignerRejectsTheWholeSignature(boolean invalidAlice) throws Exception {
+        SMIMESignedGenerator generator = new SMIMESignedGenerator();
+        generator.addCertificates(new JcaCertStore(Arrays.asList(ALICE.getCertificate(), BOB.getCertificate())));
+        generator.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC")
+                .build("SHA256withRSA", invalidAlice ? BOB.getPrivateKey() : ALICE.getPrivateKey(), ALICE.getCertificate()));
+        generator.addSignerInfoGenerator(new JcaSimpleSignerInfoGeneratorBuilder().setProvider("BC")
+                .build("SHA256withRSA", invalidAlice ? BOB.getPrivateKey() : ALICE.getPrivateKey(), BOB.getCertificate()));
+        assertThat(SmimeUtil.checkSignature(generator.generate(textPart()))).isFalse();
+    }
+
+    @Test
+    void encryptionKeyPreferenceUsesTheCertificatesEncodedIssuer() throws Exception {
+        MimeMessage signed = roundTrip(SmimeUtil.sign(SESSION, null, message(), ALICE));
+        SMIMESigned cms = new SMIMESigned((MimeMultipart) signed.getContent());
+        org.bouncycastle.asn1.cms.Attribute preference = cms.getSignerInfos().getSigners().iterator().next()
+                .getSignedAttributes().get(SMIMEAttributes.encrypKeyPref);
+        ASN1TaggedObject value = (ASN1TaggedObject) preference.getAttrValues().getObjectAt(0);
+        IssuerAndSerialNumber identity = IssuerAndSerialNumber.getInstance(ASN1Sequence.getInstance(value, false));
+        assertThat(identity.getName().getEncoded()).isEqualTo(ALICE.getCertificate().getIssuerX500Principal().getEncoded());
+        assertThat(identity.getSerialNumber().getValue()).isEqualTo(ALICE.getCertificate().getSerialNumber());
     }
 
     @Test
