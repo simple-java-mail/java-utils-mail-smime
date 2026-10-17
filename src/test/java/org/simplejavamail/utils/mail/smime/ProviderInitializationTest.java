@@ -9,9 +9,11 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.security.Security;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -22,7 +24,15 @@ class ProviderInitializationTest {
     void initializationWorksInAFreshJvm(String scenario) throws Exception {
         String javaExecutable = new File(System.getProperty("java.home"), "bin/java").getAbsolutePath();
         String classpath = System.getProperty("surefire.test.class.path", System.getProperty("java.class.path"));
-        Process process = new ProcessBuilder(javaExecutable, "-cp", classpath, Probe.class.getName(), scenario)
+        List<String> command = new ArrayList<>();
+        command.add(javaExecutable);
+        for (String argument : ManagementFactory.getRuntimeMXBean().getInputArguments()) {
+            if (argument.startsWith("-javaagent:") && argument.contains("jacoco")) {
+                command.add(argument);
+            }
+        }
+        command.addAll(Arrays.asList("-cp", classpath, Probe.class.getName(), scenario));
+        Process process = new ProcessBuilder(command)
                 .redirectErrorStream(true).start();
         try {
             assertThat(process.waitFor(30, TimeUnit.SECONDS)).as("child JVM finished").isTrue();

@@ -2,6 +2,7 @@ package org.simplejavamail.utils.mail.smime;
 
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import org.bouncycastle.cms.CMSAlgorithm;
 import org.bouncycastle.cms.jcajce.JceKeyTransRecipientId;
 import org.bouncycastle.mail.smime.SMIMEEnveloped;
@@ -72,6 +73,7 @@ class SmimeEncryptionTest {
     void nonEncryptedContentFailsAsSmimeException() throws Exception {
         assertThatThrownBy(() -> SmimeUtil.decrypt(SESSION, message(), BOB)).isInstanceOf(SmimeException.class);
         assertThatThrownBy(() -> SmimeUtil.decrypt(textPart(), BOB)).isInstanceOf(SmimeException.class);
+        assertThatThrownBy(() -> SmimeUtil.decrypt(new MimeMultipart(), BOB)).isInstanceOf(SmimeException.class);
     }
 
     @Test
