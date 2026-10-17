@@ -1,52 +1,20 @@
 package org.simplejavamail.utils.mail.smime;
 
-import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
-import jakarta.mail.Multipart;
 import jakarta.mail.Session;
-import jakarta.mail.internet.*;
-import org.bouncycastle.asn1.ASN1EncodableVector;
+import jakarta.mail.internet.ContentType;
+import jakarta.mail.internet.MimeBodyPart;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
+import jakarta.mail.internet.MimePart;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.cms.AttributeTable;
-import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.smime.SMIMECapabilitiesAttribute;
-import org.bouncycastle.asn1.smime.SMIMECapability;
-import org.bouncycastle.asn1.smime.SMIMECapabilityVector;
-import org.bouncycastle.asn1.smime.SMIMEEncryptionKeyPreferenceAttribute;
-import org.bouncycastle.asn1.x500.RDN;
-import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.jcajce.JcaCertStore;
-import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
-import org.bouncycastle.cms.*;
-import org.bouncycastle.cms.jcajce.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.mail.smime.*;
-import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.OutputEncryptor;
-import org.bouncycastle.operator.jcajce.JcaAlgorithmParametersConverter;
-import org.bouncycastle.util.Store;
+import org.bouncycastle.cms.CMSAlgorithm;
 import org.eclipse.angus.mail.smtp.SMTPMessage;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.crypto.spec.OAEPParameterSpec;
-import javax.crypto.spec.PSource;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
-import java.security.spec.MGF1ParameterSpec;
-import java.util.*;
 
 /**
  * Utilities for handling S/MIME specific operations on MIME messages from
@@ -65,13 +33,12 @@ public final class SmimeUtil {
      */
     public static final String DEFAULT_SIGNATURE_ALGORITHM_NAME = "SHA256withRSA";
     public static final KeyEncapsulationAlgorithm DEFAULT_KEY_ENCAPSULATION_ALGORITHM = KeyEncapsulationAlgorithm.RSA;
-    public static final ASN1ObjectIdentifier DEFAULT_CIPHER =  CMSAlgorithm.DES_EDE3_CBC;
+    public static final ASN1ObjectIdentifier DEFAULT_CIPHER = CMSAlgorithm.DES_EDE3_CBC;
 
     static {
         SmimeRuntime.initialize();
     }
 
-    @SuppressWarnings("unused")
     private SmimeUtil() {
     }
 
@@ -105,14 +72,11 @@ public final class SmimeUtil {
     public static MimeMessage encrypt(Session session, MimeMessage mimeMessage, @Nullable String messageId, X509Certificate certificate, KeyEncapsulationAlgorithm keyEncapsulationAlgorithm, ASN1ObjectIdentifier cmsAlgorithm) {
         try {
             MimeMessage encryptedMimeMessage = new SmimeMessageIdFixingMimeMessage(session, messageId);
-            copyHeaders(mimeMessage, encryptedMimeMessage);
+            SmimeMimeSupport.copyHeaders(mimeMessage, encryptedMimeMessage);
 
-            SMIMEEnvelopedGenerator generator = prepareGenerator(certificate, keyEncapsulationAlgorithm);
-            OutputEncryptor encryptor = prepareEncryptor(cmsAlgorithm);
-
-            MimeBodyPart encryptedMimeBodyPart = generator.generate(mimeMessage, encryptor);
-            copyContent(encryptedMimeBodyPart, encryptedMimeMessage);
-            copyHeaders(encryptedMimeBodyPart, encryptedMimeMessage);
+            MimeBodyPart encryptedMimeBodyPart = SmimeEncryption.encrypt(mimeMessage, certificate, keyEncapsulationAlgorithm, cmsAlgorithm);
+            SmimeMimeSupport.copyContent(encryptedMimeBodyPart, encryptedMimeMessage);
+            SmimeMimeSupport.copyHeaders(encryptedMimeBodyPart, encryptedMimeMessage);
             encryptedMimeMessage.saveChanges();
             return encryptedMimeMessage;
         } catch (Exception e) {
@@ -150,74 +114,11 @@ public final class SmimeUtil {
                                        KeyEncapsulationAlgorithm keyEncapsulationAlgorithm,
                                        ASN1ObjectIdentifier cmsAlgorithm) {
         try {
-            SMIMEEnvelopedGenerator generator = prepareGenerator(certificate, keyEncapsulationAlgorithm);
-            OutputEncryptor encryptor = prepareEncryptor(cmsAlgorithm);
-
-            return generator.generate(mimeBodyPart, encryptor);
+            return SmimeEncryption.encrypt(mimeBodyPart, certificate, keyEncapsulationAlgorithm, cmsAlgorithm);
 
         } catch (Exception e) {
             throw handledException(e);
         }
-    }
-
-    private static void copyHeaders(MimeBodyPart fromBodyPart, MimeMessage toMessage) throws MessagingException {
-        Enumeration<Header> headers = fromBodyPart.getAllHeaders();
-        copyHeaders(headers, toMessage);
-    }
-
-    private static void copyHeaders(MimeMessage fromMessage, MimeMessage toMessage) throws MessagingException {
-        Enumeration<Header> headers = fromMessage.getAllHeaders();
-        copyHeaders(headers, toMessage);
-    }
-
-    private static void copyHeaders(Enumeration<Header> headers, MimeMessage toMessage) throws MessagingException {
-        List<Header> copiedHeaders = Collections.list(headers);
-        for (Header header : copiedHeaders) {
-            toMessage.removeHeader(header.getName());
-        }
-        for (Header header : copiedHeaders) {
-            // addHeader prepends Received headers; raw lines retain the original trace order.
-            toMessage.addHeaderLine(header.getName() + ": " + header.getValue());
-        }
-    }
-
-    private static SMIMEEnvelopedGenerator prepareGenerator(X509Certificate certificate,
-                                                            KeyEncapsulationAlgorithm keyEncapsulationAlgorithm)
-            throws CertificateEncodingException, InvalidAlgorithmParameterException {
-        final JceKeyTransRecipientInfoGenerator infoGenerator;
-        if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA) {
-            infoGenerator = new JceKeyTransRecipientInfoGenerator(certificate);
-        } else {
-            String digestName = determineDigestName(keyEncapsulationAlgorithm);
-            AlgorithmIdentifier oaepParams = new JcaAlgorithmParametersConverter().getAlgorithmIdentifier(
-                    PKCSObjectIdentifiers.id_RSAES_OAEP, new OAEPParameterSpec(
-                            digestName, "MGF1", new MGF1ParameterSpec(digestName), PSource.PSpecified.DEFAULT));
-            infoGenerator = new JceKeyTransRecipientInfoGenerator(certificate, oaepParams);
-        }
-        infoGenerator.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        SMIMEEnvelopedGenerator generator = new SMIMEEnvelopedGenerator();
-        generator.addRecipientInfoGenerator(infoGenerator);
-        return generator;
-    }
-
-    @NotNull
-    private static String determineDigestName(KeyEncapsulationAlgorithm keyEncapsulationAlgorithm) throws InvalidAlgorithmParameterException {
-        if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA224) {
-            return "SHA-224";
-        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA256) {
-            return "SHA-256";
-        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA384) {
-            return "SHA-384";
-        } else if (keyEncapsulationAlgorithm == KeyEncapsulationAlgorithm.RSA_OAEP_SHA512) {
-            return "SHA-512";
-        } else {
-            throw new InvalidAlgorithmParameterException("Unknown S/MIME key encapsulation algorithm: "
-                    + keyEncapsulationAlgorithm.name());
-        }
-    }
-
-    private static OutputEncryptor prepareEncryptor(ASN1ObjectIdentifier cmsAlgorithm) throws CMSException {
-        return new JceCMSContentEncryptorBuilder(cmsAlgorithm).setProvider(BouncyCastleProvider.PROVIDER_NAME).build();
     }
 
     /**
@@ -232,12 +133,11 @@ public final class SmimeUtil {
      */
     public static MimeMessage decrypt(Session session, MimeMessage mimeMessage, SmimeKey smimeKey) {
         try {
-            byte[] content = decryptContent(new SMIMEEnveloped(mimeMessage), smimeKey);
-            MimeBodyPart mimeBodyPart = SMIMEUtil.toMimeBodyPart(content);
+            MimeBodyPart mimeBodyPart = SmimeEncryption.decrypt(mimeMessage, smimeKey);
 
             MimeMessage decryptedMessage = new MimeMessage(session);
-            copyHeaderLines(mimeMessage, decryptedMessage);
-            copyContent(mimeBodyPart, decryptedMessage);
+            SmimeMimeSupport.copyHeaderLines(mimeMessage, decryptedMessage);
+            SmimeMimeSupport.copyContent(mimeBodyPart, decryptedMessage);
             decryptedMessage.setHeader("Content-Type", mimeBodyPart.getContentType());
             return decryptedMessage;
 
@@ -257,7 +157,7 @@ public final class SmimeUtil {
      */
     public static MimeBodyPart decrypt(MimeBodyPart mimeBodyPart, SmimeKey smimeKey) {
         try {
-            return SMIMEUtil.toMimeBodyPart(decryptContent(new SMIMEEnveloped(mimeBodyPart), smimeKey));
+            return SmimeEncryption.decrypt(mimeBodyPart, smimeKey);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -281,56 +181,6 @@ public final class SmimeUtil {
         } catch (Exception e) {
             throw handledException(e);
         }
-    }
-
-    private static byte[] decryptContent(SMIMEEnveloped smimeEnveloped, SmimeKey smimeKey) throws MessagingException, CMSException {
-        X509Certificate certificate = smimeKey.getCertificate();
-        PrivateKey privateKey = smimeKey.getPrivateKey();
-
-        RecipientInformationStore recipients = smimeEnveloped.getRecipientInfos();
-        RecipientInformation recipient = recipients.get(new JceKeyTransRecipientId(certificate));
-
-        if (null == recipient) {
-            throw new MessagingException("no recipient");
-        }
-
-        JceKeyTransRecipient transportRecipient = new JceKeyTransEnvelopedRecipient(privateKey);
-        transportRecipient.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        return recipient.getContent(transportRecipient);
-    }
-
-    private static void copyHeaderLines(MimeMessage fromMessage, MimeMessage toMessage) throws MessagingException {
-        Enumeration<String> headerLines = fromMessage.getAllHeaderLines();
-        while (headerLines.hasMoreElements()) {
-            String nextElement = headerLines.nextElement();
-            toMessage.addHeaderLine(nextElement);
-        }
-    }
-
-    private static void copyContent(MimeBodyPart fromBodyPart, MimeMessage toMessage) throws MessagingException, IOException {
-        Set<String> contentHeaders = new HashSet<>();
-        Enumeration<Header> previousHeaders = toMessage.getAllHeaders();
-        while (previousHeaders.hasMoreElements()) {
-            String name = previousHeaders.nextElement().getName();
-            if (isContentHeader(name)) {
-                contentHeaders.add(name);
-            }
-        }
-        for (String name : contentHeaders) {
-            toMessage.removeHeader(name);
-        }
-        toMessage.setDataHandler(fromBodyPart.getDataHandler());
-        Enumeration<Header> headers = fromBodyPart.getAllHeaders();
-        while (headers.hasMoreElements()) {
-            Header header = headers.nextElement();
-            if (isContentHeader(header.getName())) {
-                toMessage.addHeader(header.getName(), header.getValue());
-            }
-        }
-    }
-
-    private static boolean isContentHeader(String name) {
-        return name.regionMatches(true, 0, "Content-", 0, "Content-".length());
     }
 
     /**
@@ -357,73 +207,10 @@ public final class SmimeUtil {
      */
     public static MimeBodyPart sign(MimeBodyPart mimeBodyPart, SmimeKey smimeKey, String algorithmName) {
         try {
-            SMIMESignedGenerator generator = getGenerator(smimeKey, algorithmName);
-            MimeMultipart signedMimeMultipart = generator.generate(MimeUtil.canonicalize(prepareMimeBodyPart(mimeBodyPart, false)));
-            UpdatableMimeBodyPart signedMimeBodyPart = new UpdatableMimeBodyPart();
-            signedMimeBodyPart.setContent(signedMimeMultipart);
-            signedMimeBodyPart.updateHeaders();
-            return signedMimeBodyPart;
-
+            return SmimeSigning.sign(mimeBodyPart, smimeKey, algorithmName);
         } catch (Exception e) {
             throw handledException(e);
         }
-
-    }
-
-    private static SMIMESignedGenerator getGenerator(SmimeKey smimeKey, String algorithmName)
-            throws CertificateEncodingException, OperatorCreationException {
-        SMIMESignedGenerator generator = new SMIMESignedGenerator();
-        generator.addCertificates(getCertificateStore(smimeKey));
-        generator.addSignerInfoGenerator(getInfoGenerator(smimeKey, algorithmName));
-        return generator;
-    }
-
-    private static SignerInfoGenerator getInfoGenerator(SmimeKey smimeKey, String algorithmName)
-            throws OperatorCreationException, CertificateEncodingException {
-        JcaSimpleSignerInfoGeneratorBuilder builder = new JcaSimpleSignerInfoGeneratorBuilder();
-        builder.setSignedAttributeGenerator(new AttributeTable(getSignedAttributes(smimeKey)));
-        builder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-
-        PrivateKey privateKey = smimeKey.getPrivateKey();
-        X509Certificate certificate = smimeKey.getCertificate();
-        return builder.build(algorithmName, privateKey, certificate);
-    }
-
-    private static ASN1EncodableVector getSignedAttributes(SmimeKey smimeKey) {
-        ASN1EncodableVector signedAttributes = new ASN1EncodableVector();
-        IssuerAndSerialNumber issuerAndSerialNumber = getIssuerAndSerialNumber(smimeKey);
-        signedAttributes.add(new SMIMEEncryptionKeyPreferenceAttribute(issuerAndSerialNumber));
-        signedAttributes.add(new SMIMECapabilitiesAttribute(getCapabilityVector()));
-        return signedAttributes;
-    }
-
-    private static SMIMECapabilityVector getCapabilityVector() {
-        SMIMECapabilityVector capabilityVector = new SMIMECapabilityVector();
-        capabilityVector.addCapability(SMIMECapability.dES_EDE3_CBC);
-        capabilityVector.addCapability(SMIMECapability.rC2_CBC, 128);
-        capabilityVector.addCapability(SMIMECapability.dES_CBC);
-        return capabilityVector;
-    }
-
-    private static IssuerAndSerialNumber getIssuerAndSerialNumber(SmimeKey smimeKey) {
-        X509Certificate certificate = smimeKey.getCertificate();
-        BigInteger serialNumber = certificate.getSerialNumber();
-        X500Name issuerName = X500Name.getInstance(certificate.getIssuerX500Principal().getEncoded());
-        return new IssuerAndSerialNumber(issuerName, serialNumber);
-    }
-
-    private static JcaCertStore getCertificateStore(SmimeKey smimeKey) throws CertificateEncodingException {
-        Certificate[] certificateChain = smimeKey.getCertificateChain();
-        X509Certificate certificate = smimeKey.getCertificate();
-
-        final List<Certificate> certificateList;
-        if (certificateChain != null && certificateChain.length > 0) {
-            certificateList = Arrays.asList(certificateChain);
-        } else {
-            certificateList = new ArrayList<>();
-            certificateList.add(certificate);
-        }
-        return new JcaCertStore(certificateList);
     }
 
     /**
@@ -449,8 +236,8 @@ public final class SmimeUtil {
      * @param algorithmName The name of the signature algorithm to use. Must be an algorithm supported by the Bouncy Castle security provider.
      * @return The new S/MIME signed {@link MimeMessage} or {@link SMTPMessage}.
      */
+    @SuppressWarnings("unchecked")
     public static <T extends MimeMessage> T sign(Session session, @Nullable String messageId, T mimeMessage, SmimeKey smimeKey, String algorithmName) {
-        //noinspection unchecked
         return (mimeMessage instanceof SMTPMessage)
                 ? sign(mimeMessage, (T) new SmimeMessageIdFixingSMTPMessage(session, messageId), smimeKey, algorithmName)
                 : sign(mimeMessage, (T) new SmimeMessageIdFixingMimeMessage(session, messageId), smimeKey, algorithmName);
@@ -458,43 +245,15 @@ public final class SmimeUtil {
 
     private static <T extends MimeMessage> T sign(T mimeMessage, T signedMessage, SmimeKey smimeKey, String algorithmName) {
         try {
-            copyHeaderLines(mimeMessage, signedMessage);
-            copyContent(sign(extractMimeBodyPart(mimeMessage), smimeKey, algorithmName), signedMessage);
+            SmimeMimeSupport.copyHeaderLines(mimeMessage, signedMessage);
+            SmimeMimeSupport.copyContent(sign(SmimeMimeSupport.extractMimeBodyPart(mimeMessage), smimeKey, algorithmName), signedMessage);
             if (mimeMessage instanceof SMTPMessage && signedMessage instanceof SMTPMessage) {
-                copySmtpOptions((SMTPMessage) mimeMessage, (SMTPMessage) signedMessage);
+                SmimeMimeSupport.copySmtpOptions((SMTPMessage) mimeMessage, (SMTPMessage) signedMessage);
             }
             return signedMessage;
         } catch (Exception e) {
             throw handledException(e);
         }
-    }
-
-    private static MimeBodyPart extractMimeBodyPart(MimeMessage mimeMessage) throws IOException, MessagingException {
-        return prepareMimeBodyPart(mimeMessage, true);
-    }
-
-    private static MimeBodyPart prepareMimeBodyPart(MimePart source, boolean contentHeadersOnly) throws MessagingException {
-        UpdatableMimeBodyPart bodyPart = new UpdatableMimeBodyPart();
-        bodyPart.setDataHandler(source.getDataHandler());
-        Enumeration<Header> headers = source.getAllHeaders();
-        while (headers.hasMoreElements()) {
-            Header header = headers.nextElement();
-            if (!contentHeadersOnly || isContentHeader(header.getName())) {
-                bodyPart.addHeader(header.getName(), header.getValue());
-            }
-        }
-        bodyPart.updateHeaders();
-        return bodyPart;
-    }
-
-    private static void copySmtpOptions(SMTPMessage source, SMTPMessage target) {
-        target.setEnvelopeFrom(source.getEnvelopeFrom());
-        target.setNotifyOptions(source.getNotifyOptions());
-        target.setReturnOption(source.getReturnOption());
-        target.setSendPartial(source.getSendPartial());
-        target.setAllow8bitMIME(source.getAllow8bitMIME());
-        target.setSubmitter(source.getSubmitter());
-        target.setMailExtension(source.getMailExtension());
     }
 
     /**
@@ -506,7 +265,7 @@ public final class SmimeUtil {
      */
     public static boolean checkSignature(MimeMultipart mimeMultipart) {
         try {
-            return checkSignature(new SMIMESigned(mimeMultipart));
+            return SmimeSigning.checkSignature(mimeMultipart);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -521,43 +280,7 @@ public final class SmimeUtil {
      */
     public static boolean checkSignature(MimePart mimePart) {
         try {
-            if (mimePart.isMimeType("multipart/signed")) {
-                return checkSignature(new SMIMESigned((MimeMultipart) mimePart.getContent()));
-            } else if (mimePart.isMimeType("application/pkcs7-mime") || mimePart.isMimeType("application/x-pkcs7-mime")) {
-                return checkSignature(new SMIMESigned(mimePart));
-            } else {
-                throw new SmimeException("Message not signed");
-            }
-        } catch (Exception e) {
-            throw handledException(e);
-        }
-    }
-
-    /**
-     * Checks a SMIMESigned to make sure that the signature matches.
-     */
-    private static boolean checkSignature(SMIMESigned smimeSigned) {
-        try {
-            boolean returnValue = true;
-
-            @SuppressWarnings("rawtypes")
-            Store certificates = smimeSigned.getCertificates();
-            Iterator<SignerInformation> signerInformations = smimeSigned.getSignerInfos().getSigners().iterator();
-
-            if (!signerInformations.hasNext()) {
-                return false;
-            }
-
-            while (returnValue && signerInformations.hasNext()) {
-                SignerInformation signerInformation = signerInformations.next();
-                X509Certificate certificate = getCertificate(certificates, signerInformation.getSID());
-                SignerInformationVerifier verifier = getVerifier(certificate);
-                if (!signerInformation.verify(verifier)) {
-                    returnValue = false;
-                }
-            }
-            return returnValue;
-
+            return SmimeSigning.checkSignature(mimePart);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -570,7 +293,7 @@ public final class SmimeUtil {
      */
     public static String getSignedByAddress(MimeMultipart mimeMultipart) {
         try {
-            return getSignedByAddress(new SMIMESigned(mimeMultipart));
+            return SmimeSigning.getSignedByAddress(mimeMultipart);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -583,52 +306,10 @@ public final class SmimeUtil {
      */
     public static String getSignedByAddress(MimePart mimePart) {
         try {
-            if (mimePart.isMimeType("multipart/signed")) {
-                return getSignedByAddress(new SMIMESigned((MimeMultipart) mimePart.getContent()));
-            } else if (mimePart.isMimeType("application/pkcs7-mime") || mimePart.isMimeType("application/x-pkcs7-mime")) {
-                return getSignedByAddress(new SMIMESigned(mimePart));
-            } else {
-                throw new SmimeException("Message not signed");
-            }
+            return SmimeSigning.getSignedByAddress(mimePart);
         } catch (Exception e) {
             throw handledException(e);
         }
-    }
-
-    /**
-     * Returns the subject / address to which the certificate was issued to. Email clients may use this to show
-     * {@code "Signed by: <subject / address>"}
-     */
-    private static String getSignedByAddress(SMIMESigned smimeSigned) {
-        try {
-            @SuppressWarnings("rawtypes")
-            Store certificates = smimeSigned.getCertificates();
-
-            SignerInformation signerInformation = smimeSigned.getSignerInfos().getSigners().iterator().next();
-            X509Certificate certificate = getCertificate(certificates, signerInformation.getSID());
-            SignerInformationVerifier verifier = getVerifier(certificate);
-            X500Name x500name = verifier.getAssociatedCertificate().getSubject();
-            RDN cn = x500name.getRDNs(BCStyle.CN)[0];
-            return IETFUtils.valueToString(cn.getFirst().getValue());
-
-        } catch (Exception e) {
-            throw handledException(e);
-        }
-    }
-
-    private static X509Certificate getCertificate(@SuppressWarnings("rawtypes") Store certificates,
-                                                  SignerId signerId) throws CertificateException {
-        @SuppressWarnings({"unchecked"})
-        X509CertificateHolder certificateHolder = (X509CertificateHolder) certificates.getMatches(signerId).iterator().next();
-        JcaX509CertificateConverter certificateConverter = new JcaX509CertificateConverter();
-        certificateConverter.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        return certificateConverter.getCertificate(certificateHolder);
-    }
-
-    private static SignerInformationVerifier getVerifier(X509Certificate certificate) throws OperatorCreationException {
-        JcaSimpleSignerInfoVerifierBuilder builder = new JcaSimpleSignerInfoVerifierBuilder();
-        builder.setProvider(BouncyCastleProvider.PROVIDER_NAME);
-        return builder.build(certificate);
     }
 
     /**
@@ -640,7 +321,7 @@ public final class SmimeUtil {
      */
     public static MimeBodyPart getSignedContent(MimeMultipart mimeMultipart) {
         try {
-            return new SMIMESigned(mimeMultipart).getContent();
+            return SmimeSigning.getSignedContent(mimeMultipart);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -656,13 +337,7 @@ public final class SmimeUtil {
      */
     public static MimeBodyPart getSignedContent(MimePart mimePart) {
         try {
-            if (mimePart.isMimeType("multipart/signed")) {
-                return new SMIMESigned((MimeMultipart) mimePart.getContent()).getContent();
-            } else if (mimePart.isMimeType("application/pkcs7-mime") || mimePart.isMimeType("application/x-pkcs7-mime")) {
-                return new SMIMESigned(mimePart).getContent();
-            } else {
-                throw new SmimeException("Message not signed");
-            }
+            return SmimeSigning.getSignedContent(mimePart);
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -676,7 +351,7 @@ public final class SmimeUtil {
      */
     public static SmimeState getStatus(MimeMultipart mimeMultipart) {
         try {
-            return getStatus(new ContentType(mimeMultipart.getContentType()));
+            return SmimeContentType.getStatus(new ContentType(mimeMultipart.getContentType()));
         } catch (Exception e) {
             throw handledException(e);
         }
@@ -690,53 +365,10 @@ public final class SmimeUtil {
      */
     public static SmimeState getStatus(MimePart mimePart) {
         try {
-            return getStatus(new ContentType(mimePart.getContentType()));
+            return SmimeContentType.getStatus(new ContentType(mimePart.getContentType()));
         } catch (Exception e) {
             throw handledException(e);
         }
-    }
-
-    private static SmimeState getStatus(ContentType contentType) {
-        if (isSmimeSignatureContentType(contentType)) {
-            return SmimeState.SIGNED;
-        } if (isProbablySmimeSignatureContentType(contentType)) {
-            return SmimeState.PROBABLY_SIGNED;
-        } else if (isSignatureSmimeType(contentType)) {
-            return SmimeState.SIGNED_ENVELOPED;
-        } else if (isSmimeEncryptionContenttype(contentType)) {
-            return SmimeState.ENCRYPTED;
-        } else {
-            return SmimeState.NEITHER;
-        }
-    }
-
-    private static boolean isSmimeEncryptionContenttype(ContentType contentType) {
-        String baseContentType = contentType.getBaseType();
-        return baseContentType.equalsIgnoreCase("application/pkcs7-mime")
-                || baseContentType.equalsIgnoreCase("application/x-pkcs7-mime");
-    }
-
-    private static boolean isSmimeSignatureContentType(ContentType contentType) {
-        String protocol = contentType.getParameter("protocol");
-        return contentType.getBaseType().equalsIgnoreCase("multipart/signed")
-                && protocol != null && isSmimeSignatureProtocoll(protocol);
-    }
-
-    private static boolean isProbablySmimeSignatureContentType(ContentType contentType) {
-        String protocol = contentType.getParameter("protocol");
-        return contentType.getBaseType().equalsIgnoreCase("multipart/signed") && protocol == null;
-    }
-
-    private static boolean isSignatureSmimeType(ContentType contentType) {
-        String baseContentType = contentType.getBaseType();
-        return (baseContentType.equalsIgnoreCase("application/pkcs7-mime")
-                || baseContentType.equalsIgnoreCase("application/x-pkcs7-mime"))
-                && "signed-data".equalsIgnoreCase(contentType.getParameter("smime-type"));
-    }
-
-    private static boolean isSmimeSignatureProtocoll(String protocol) {
-        return protocol.equalsIgnoreCase("application/pkcs7-signature")
-                || protocol.equalsIgnoreCase("application/x-pkcs7-signature");
     }
 
     private static SmimeException handledException(Exception e) {
