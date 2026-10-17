@@ -1,5 +1,7 @@
 package org.simplejavamail.utils.mail.smime;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+
 import java.io.InputStream;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -19,6 +21,7 @@ import java.util.Set;
  * @author Torsten Krause (tk at markenwerk dot net)
  * @since 1.0.0
  */
+@SuppressFBWarnings(value = "CT_CONSTRUCTOR_THROW", justification = "Keep subclassing compatible; no keystore is assigned until loading succeeds.")
 public class SmimeKeyStore {
 
 	private final KeyStore keyStore;
@@ -58,10 +61,15 @@ public class SmimeKeyStore {
 	 *            after it has been used.
 	 */
 	public SmimeKeyStore(InputStream stream, char[] password, boolean discardPassword) {
+		keyStore = loadKeyStore(stream, password, discardPassword);
+	}
+
+	private static KeyStore loadKeyStore(InputStream stream, char[] password, boolean discardPassword) {
 		try {
 			SmimeRuntime.ensureProvider();
-			keyStore = KeyStore.getInstance("PKCS12", "BC");
-			keyStore.load(stream, password);
+			KeyStore loadedKeyStore = KeyStore.getInstance("PKCS12", "BC");
+			loadedKeyStore.load(stream, password);
+			return loadedKeyStore;
 		} catch (Exception e) {
 			throw new SmimeException("Couldn't initialize SmimeKeyStore", e);
 		} finally {
@@ -71,7 +79,7 @@ public class SmimeKeyStore {
 		}
 	}
 
-	private void overwrite(char[] password) {
+	private static void overwrite(char[] password) {
 		if (null != password) {
 			for (int i = 0, n = password.length; i < n; i++) {
 				password[i] = 0;

@@ -1,5 +1,6 @@
 package org.simplejavamail.utils.mail.smime;
 
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
@@ -37,6 +38,7 @@ public class SmimeKey {
 	 *            {@code SmimeKey} starting with the certificate that holds the
 	 *            public key that corresponds to the given private key and
 	 *            ending with the trust anchor.
+	 *            The array is copied; later changes to it do not replace this key's certificates.
 	 */
 	public SmimeKey(PrivateKey privateKey, X509Certificate... certificateChain) {
 		this.privateKey = privateKey;
@@ -77,10 +79,12 @@ public class SmimeKey {
 	 * Compiles and returns the list of email address associated with the
 	 * {@link #getCertificate() certificate} of this {@code SmimeKey} by
 	 * inspecting the subjects distinguished name.
+	 * Subject alternative names are not included.
 	 * 
 	 * @return A {@link Collections#unmodifiableList(List) unmodifiable list} of
 	 *         email addresses.
 	 */
+	@SuppressFBWarnings(value = "EI_EXPOSE_REP", justification = "The cached list is an unmodifiable snapshot.")
 	public List<String> getAssociatedAddresses() {
 		if (addresses == null) {
 			extractAssociatedAddresses();

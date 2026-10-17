@@ -47,4 +47,14 @@ class SmimeKeyTest {
     void certificateWithoutEmailHasAnEmptyAddressList() {
         assertThat(new SmimeKey(ALICE.getPrivateKey(), ROOT).getAssociatedAddresses()).isEmpty();
     }
+
+    @Test
+    void subclassesCanStillSupplyASingleCertificateWithoutAChain() throws Exception {
+        SmimeKey key = new SmimeKey(ALICE.getPrivateKey(), (X509Certificate[]) null) {
+            @Override public X509Certificate getCertificate() {
+                return ALICE.getCertificate();
+            }
+        };
+        assertThat(SmimeUtil.checkSignature(SmimeUtil.sign(textPart(), key))).isTrue();
+    }
 }
