@@ -1,7 +1,5 @@
 package org.simplejavamail.utils.mail.smime;
 
-import jakarta.activation.CommandMap;
-import jakarta.activation.MailcapCommandMap;
 import jakarta.mail.Header;
 import jakarta.mail.MessagingException;
 import jakarta.mail.Multipart;
@@ -43,7 +41,6 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
@@ -71,24 +68,11 @@ public final class SmimeUtil {
     public static final ASN1ObjectIdentifier DEFAULT_CIPHER =  CMSAlgorithm.DES_EDE3_CBC;
 
     static {
-        if (null == Security.getProvider(BouncyCastleProvider.PROVIDER_NAME)) {
-            Security.addProvider(new BouncyCastleProvider());
-            updateMailcapCommandMap();
-        }
+        SmimeRuntime.initialize();
     }
 
     @SuppressWarnings("unused")
     private SmimeUtil() {
-    }
-
-    private static void updateMailcapCommandMap() {
-        MailcapCommandMap map = (MailcapCommandMap) CommandMap.getDefaultCommandMap();
-        map.addMailcap("application/pkcs7-signature;;x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_signature");
-        map.addMailcap("application/pkcs7-mime;;x-java-content-handler=org.bouncycastle.mail.smime.handlers.pkcs7_mime");
-        map.addMailcap("application/x-pkcs7-signature;;x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_signature");
-        map.addMailcap("application/x-pkcs7-mime;;x-java-content-handler=org.bouncycastle.mail.smime.handlers.x_pkcs7_mime");
-        map.addMailcap("multipart/signed;;x-java-content-handler=org.bouncycastle.mail.smime.handlers.multipart_signed");
-        CommandMap.setDefaultCommandMap(map);
     }
 
     /**

@@ -59,6 +59,7 @@ public class SmimeKeyStore {
 	 */
 	public SmimeKeyStore(InputStream stream, char[] password, boolean discardPassword) {
 		try {
+			SmimeRuntime.ensureProvider();
 			keyStore = KeyStore.getInstance("PKCS12", "BC");
 			keyStore.load(stream, password);
 		} catch (Exception e) {
