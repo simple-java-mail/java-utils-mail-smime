@@ -258,6 +258,8 @@ public final class SmimeUtil {
 
     /**
      * Checks the signature on an S/MIME signed MIME multipart.
+     * This verifies cryptographic integrity using embedded certificates; callers
+     * must separately establish certificate trust and sender identity.
      *
      * @param mimeMultipart The {@link MimeMultipart} to be checked.
      * @return {@code true} if the multipart is correctly signed, {@code false}
@@ -273,6 +275,8 @@ public final class SmimeUtil {
 
     /**
      * Checks the signature on an S/MIME signed MIME part (i.e. MIME message).
+     * This verifies cryptographic integrity using embedded certificates; callers
+     * must separately establish certificate trust and sender identity.
      *
      * @param mimePart The {@link MimePart} to be checked.
      * @return {@code true} if the part is correctly signed, {@code false}
@@ -288,8 +292,8 @@ public final class SmimeUtil {
 
     /**
      * @param mimeMultipart The {@link MimeMultipart} to be checked.
-     * @return The subject / address to which the certificate was issued to. Email clients may use this to show
-     * {@code "Signed by: <subject / address>"}
+     * @return The first signer's certificate common name. This legacy display
+     * method does not verify the signature or authenticate an email address.
      */
     public static String getSignedByAddress(MimeMultipart mimeMultipart) {
         try {
@@ -301,8 +305,8 @@ public final class SmimeUtil {
 
     /**
      * @param mimePart The {@link MimePart} to be checked.
-     * @return The subject / address to which the certificate was issued to. Email clients may use this to show
-     * {@code "Signed by: <subject / address>"}
+     * @return The first signer's certificate common name. This legacy display
+     * method does not verify the signature or authenticate an email address.
      */
     public static String getSignedByAddress(MimePart mimePart) {
         try {

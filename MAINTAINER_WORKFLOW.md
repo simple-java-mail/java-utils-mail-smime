@@ -89,8 +89,20 @@ Run focused tests first, then the same verification used by CircleCI:
 
 ```powershell
 mvn -Dtest=SmimeUtilTest test
-mvn verify -Dmaven.javadoc.skip=true -Djacoco.skip=true -Dlicense.skip=true
+mvn clean verify -Pcoverage -Dmaven.javadoc.skip=true -Dlicense.skip=true
 ```
+
+Use Java 8 for release-grade verification and repeat the coverage build on a
+current supported JDK when changing MIME or cryptographic behavior. The coverage
+profile enforces 90% line coverage and 80% branch coverage and writes its HTML
+report to `target/site/jacoco/index.html`. Topic branches run the same build;
+release approvals and deployment jobs remain restricted to `master`.
+
+Keep public signatures, enum values, and cryptographic defaults stable during
+patch maintenance. Package-private helpers separate MIME adaptation, signing,
+encryption, header classification, and runtime initialization; expose a new
+public abstraction only as an intentional API change. Record behavioral fixes
+and any deferred compatibility decisions in the maintenance review.
 
 Before committing, inspect both the unstaged and staged diff. Do not mix
 unrelated dependency, formatting, documentation, or release-note changes.
@@ -100,8 +112,10 @@ unrelated dependency, formatting, documentation, or release-note changes.
 `README.md` is both the developer landing page and the repository's retained
 change history. Update its dependency example and current version together, and
 add concise newest-first release notes for user-visible behavior, security,
-dependency, algorithm, or compatibility changes. Preserve the original S/MIME
-usage documentation below the maintained history.
+dependency, algorithm, or compatibility changes. Keep unreleased changes clearly
+separate from published versions. Keep usage examples aligned with the actual
+public overloads, and retain release history and attribution when refreshing the
+front page.
 
 Release notes should emphasize behavior users can observe. Skip internal build
 details unless they affect published artifacts. A patch can be concise, but its
@@ -173,6 +187,10 @@ Historical GitHub releases may be published today, but their milestones retain
 the original release dates.
 
 ## 11. Definition of done
+
+For implementation-only work, leave a clean topic branch with semantic commits,
+passing verification, and clearly marked unreleased documentation. The release
+bookkeeping below applies only to an authorized release.
 
 - Required tests pass, or any omission is explained.
 - `master` is clean and aligned with `origin/master`.

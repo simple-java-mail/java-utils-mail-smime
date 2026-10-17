@@ -6,7 +6,7 @@ import jakarta.mail.internet.MimePart;
 /**
  * The {@code SmimeState} of a {@link MimePart} or {@link MimeMultipart} is
  * derived from the corresponding content type and can be obtained with
- * {@link SmimeUtil#checkSignature(MimePart) checkSignature()};
+ * {@link SmimeUtil#getStatus(MimePart) getStatus()}.
  * 
  * @author Torsten Krause (tk at markenwerk dot net)
  * @since 1.0.0
